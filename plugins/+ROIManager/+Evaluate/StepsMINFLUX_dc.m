@@ -111,9 +111,19 @@ classdef StepsMINFLUX_dc<interfaces.SEEvaluationProcessor
            x1=obj.locsuse.xnm(index1);
            y1=obj.locsuse.ynm(index1);
            time1=obj.locsuse.time(index1);
-           x2=obj.locsuse.xnm(index2)+p.offx;
-           y2=obj.locsuse.ynm(index2)+p.offy;
+
+           %offset
+           if isfield(obj.site.evaluation.(obj.modulename),'offset') && ~isempty(obj.site.evaluation.(obj.modulename).offset)
+               offset=obj.site.evaluation.(obj.modulename).offset;
+               obj.setGuiParameters(struct('offx',offset(1),'offy',offset(2)));
+           else
+               offset=[p.offx, p.offy];
+           end
+
+           x2=obj.locsuse.xnm(index2)+offset(1);%+p.offx;
+           y2=obj.locsuse.ynm(index2)+offset(2);%+p.offy;
            time2=obj.locsuse.time(index2);
+           out.offset=offset;
            % 
            % if isfield(obj.locData.loc,'znm')
            %     z=obj.locsuse.znm(index1);
@@ -264,7 +274,12 @@ classdef StepsMINFLUX_dc<interfaces.SEEvaluationProcessor
         end
         function pard=guidef(obj)
             pard=guidef(obj);
-        end     
+        end    
+        function offsetupdate(obj,a,b)
+            offset=[obj.getSingleGuiParameter('offx'), obj.getSingleGuiParameter('offy')];
+            obj.site.evaluation.(obj.modulename).offset=offset;
+
+        end
     end
 
 end
@@ -1212,9 +1227,9 @@ pard.simplemovie.position=[7,4];
 pard.offt.object=struct('String','shift xy (nm)','Style','text');
 pard.offt.position=[8,1];
 pard.offt.Width=2;
-pard.offx.object=struct('String','0','Style','edit');
+pard.offx.object=struct('String','0','Style','edit','Callback',@obj.offsetupdate);
 pard.offx.position=[8,3];
-pard.offy.object=struct('String','0','Style','edit');
+pard.offy.object=struct('String','0','Style','edit','Callback',@obj.offsetupdate);
 pard.offy.position=[8,4];
 
 pard.colt.object=struct('String','Color (rgbycmk...) (ch1, ch2)','Style','text');

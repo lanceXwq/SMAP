@@ -81,9 +81,15 @@ classdef StepsMINFLUX<interfaces.SEEvaluationProcessor
                    out=[];
                    return
                end
+               if p.dcch==2
+                      offset=obj.site.evaluation.StepsMINFLUX_dc.offset;
+               else
+                   offset=[0 0];
+               end
                id=obj.site.evaluation.StepsMINFLUX_dc.(idname);
                angle=obj.site.evaluation.StepsMINFLUX_dc.angle;
                rotcenter=obj.site.evaluation.StepsMINFLUX_dc.rotcenter;
+               
                % obj.locData.SE.sites(1).evaluation
            end
            filenumberh=mode(locs.filenumber);
@@ -128,8 +134,8 @@ classdef StepsMINFLUX<interfaces.SEEvaluationProcessor
                 end
 
            if isfield(p,'fromdc') && p.fromdc
-               [xr,yr,angle]=rotateCenterCoordinates(x,y,time,obj.range,angle,rotcenter);
-               [xfr,yfr,angle]=rotateCenterCoordinates(xf,yf,time,obj.range,angle,rotcenter);
+               [xr,yr,angle]=rotateCenterCoordinates(x+offset(1),y+offset(2),time,obj.range,angle,rotcenter);
+               [xfr,yfr,angle]=rotateCenterCoordinates(xf+offset(1),yf+offset(2),time,obj.range,angle,rotcenter);
            else
 
                 [xr,yr,angle,rotcenter]=rotateCenterCoordinates(x,y,time,obj.range);
