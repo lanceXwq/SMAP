@@ -599,11 +599,11 @@ grid(axsy);
 
 if ~isempty(dmv) && length(dmv)>1
 ax3=obj.setoutput('stephist');
-histogram(ax3,dmv,min(dmv):.5:max(dmv));
+histogram(ax3,dmv,floor(min(dmv)):.5:ceil(max(dmv)));
 %step time
 axstept=obj.setoutput('dwelltime');
 dt=max(0.1,round(mean(obj.steps.dwelltime)/5));
-histogram(axstept,obj.steps.dwelltime,0:dt:max(obj.steps.dwelltime))
+histogram(axstept,obj.steps.dwelltime,0:dt:max(obj.steps.dwelltime)+dt)
 title(axstept,"mean step time = "+ num2str(mean(obj.steps.dwelltime),'%2.1f') + " ms");
 end
 
