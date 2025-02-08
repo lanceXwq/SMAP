@@ -1,5 +1,5 @@
 classdef BatchAnalysis<interfaces.DialogProcessor
-% Batch analysis of many files with defined plugins. Create a Batchanlaysis
+% Batch analysis of many files with defined plugins. Create a Batchanalysis
 % Tab in the Anlaysis tab and add all plugins for batch analysis there.';
 
     methods
@@ -153,7 +153,7 @@ end
 
 function pard=guidef(obj)
 
-pard.text.object=struct('Style','text','String','Create a Batchanlaysis tab in the Analysis tab and add all plugins that you want to evaluate.');
+pard.text.object=struct('Style','text','String','Create a Batchanalysis tab in the Analysis tab and add all plugins that you want to evaluate.');
 pard.text.position=[1,1];
 pard.text.Width=4;
 
@@ -196,5 +196,5 @@ pard.savefigures.Width=1;
 
 pard.plugininfo.type='ProcessorPlugin';
 
-pard.plugininfo.description='Batch analysis of many files with defined plugins. Create a Batchanlaysis Tab in the Anlaysis tab and add all plugins for batch analysis there.';
+pard.plugininfo.description='Batch analysis of many files with defined plugins. Create a Batchanalysis Tab in the Anlaysis tab and add all plugins for batch analysis there.';
 end
