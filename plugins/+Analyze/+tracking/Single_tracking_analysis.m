@@ -32,8 +32,8 @@ out=[];
 minlenframes=p.minlenframes;
 maxd=p.maxd; % nm max distance to associate localizations
 
-cotracklength=p.cotracklength; %minimum data poits associated between tracks
-cotrackfraction = p.cotrackfraction; %minimum fraction of localizations associated
+% cotracklength=p.cotracklength; %minimum data poits associated between tracks
+% cotrackfraction = p.cotrackfraction; %minimum fraction of localizations associated
 
 % test directed movement
 aspectratio=p.aspectratio; %should be below this for directed motion.
@@ -237,6 +237,7 @@ if contains(p.showtraces.selection,'progressive')
         axis equal
         xlabel('x (nm)')
         ylabel('y (nm)')
+        title("Id:"+goodpairs(k))
 
     end
 end
