@@ -38,6 +38,11 @@ classdef StepsMINFLUX<interfaces.SEEvaluationProcessor
                 end                
            end
 
+           if isfield(obj.site.evaluation.(obj.modulename),'overshoot') && ~isempty(obj.site.evaluation.(obj.modulename).overshoot)
+               p.overshoot=obj.site.evaluation.(obj.modulename).overshoot;
+               obj.setGuiParameters(struct('overshoot',p.overshoot));
+           end
+
            %identify all localizations in track
            usefields={'xnm','ynm','groupindex','tid','time','znm', 'efo', 'cfr', 'eco', 'ecc', 'efc','filenumber','vld','sta'};
            locs=obj.getLocs(usefields,'layer',find(obj.getPar('sr_layerson')),'size',obj.getPar('se_siteroi')/2,'removeFilter',{'time'});
