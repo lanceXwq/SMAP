@@ -8,6 +8,6 @@ for k=1:length(varargin)
     st=st.(varargin{k});
 end
 if isempyt(st)
-    out=false
+    out=false;
 end
 end
