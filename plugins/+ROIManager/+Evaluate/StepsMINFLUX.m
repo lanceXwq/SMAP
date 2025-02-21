@@ -185,6 +185,7 @@ classdef StepsMINFLUX<interfaces.SEEvaluationProcessor
 
            filelist=obj.getPar('filelist_short');
            out.filename=filelist.String{mode(obj.locsuse.filenumber)};
+           out.overshoot=p.overshoot;
            
            plotstatistics(obj)
         end
@@ -233,6 +234,11 @@ classdef StepsMINFLUX<interfaces.SEEvaluationProcessor
         function pard=guidef(obj)
             pard=guidef(obj);
         end     
+        function overshootupdate(obj,a,b)
+            overshoot=obj.getSingleGuiParameter('overshoot');
+            obj.site.evaluation.(obj.modulename).overshoot=overshoot;
+
+        end
     end
 
 end
@@ -1081,7 +1087,7 @@ pard.link.Width=1.5;
 
 pard.overshoott.object=struct('String','Coarsness','Style','text');
 pard.overshoott.position=[2,1];
-pard.overshoot.object=struct('String','.8','Style','edit');
+pard.overshoot.object=struct('String','.8','Style','edit','Callback',@obj.overshootupdate);
 pard.overshoot.position=[2,2];
 pard.overshoot.Width=0.5;
 
