@@ -494,7 +494,7 @@ else
     tm=max(obj.coord.timeplot);
 end
 
-legend(ax2,['tid: ' num2str(trackid)])
+legend(ax2,['tid: ' num2str(trackid)], 'Location', 'northwest')
 
 mv=obj.steps.stepvalue;
 hstep=stairs(ax2,[obj.steps.steptime ;tm],[mv ;mv(end)],'r');
