@@ -16,22 +16,25 @@ classdef SimpleTracking<interfaces.DialogProcessor
     end
 end
 function out=tracki(obj,p)
+ layers=find(obj.getPar('sr_layerson'));
+ locsf=obj.locData.getloc({'filenumber'},'layer',layers(1),'position','roi','grouping','ungrouped');
+          
 switch p.trackwhat.selection
     case 'all'
-        [locs,indin]=obj.locData.getloc({'xnm','ynm','znm','locprecnm','locprecznm','phot','frame','track_id','channel'},'position','roi','grouping','ungrouped');
+        [locs,indin]=obj.locData.getloc({'xnm','ynm','znm','locprecnm','locprecznm','phot','frame','track_id','channel','filenumber'},'position','roi','grouping','ungrouped');
         out=tracksingle(obj,p,locs,indin);
     case 'layers'
         layers=find(obj.getPar('sr_layerson'));
         for k=1:length(layers)
-            [locs,indin]=obj.locData.getloc({'xnm','ynm','znm','locprecnm','locprecznm','phot','frame','track_id'},'layer',layers(k),'position','roi','grouping','ungrouped');
+            [locs,indin]=obj.locData.getloc({'xnm','ynm','znm','locprecnm','locprecznm','phot','frame','track_id','filenumber'},'layer',layers(k),'position','roi','grouping','ungrouped');
             out=tracksingle(obj,p,locs,indin);
             p.overwritetracks=false;
         end
     case 'channels'
         channels=unique(obj.locData.loc.channel);
         for k=1:length(channels)
-            [locs,indin]=obj.locData.getloc({'xnm','ynm','znm','locprecnm','locprecznm','phot','frame','track_id','channel'},'position','roi','grouping','ungrouped');
-            chgood=locs.channel==channels(k);
+            [locs,indin]=obj.locData.getloc({'xnm','ynm','znm','locprecnm','locprecznm','phot','frame','track_id','channel','filenumber'},'position','roi','grouping','ungrouped');
+            chgood=locs.channel==channels(k) & locs.filenumber==mode(locsf.filenumber);
             out=tracksingle(obj,p,locs,indin,chgood);
             p.overwritetracks=false;
         end
@@ -39,7 +42,7 @@ end
 
 tracklength=zeros(size(obj.locData.loc.xnm),'like',obj.locData.loc.xnm);
 for k=1:max(obj.locData.loc.track_id)
-    indt=obj.locData.loc.track_id==k;
+    indt=obj.locData.loc.track_id==k & obj.locData.loc.filenumber==mode(locs.filenumber);
     tracklength(indt)=sum(indt);
 end
 obj.locData.setloc('track_length',tracklength);

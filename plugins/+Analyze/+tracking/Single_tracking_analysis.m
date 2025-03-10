@@ -247,6 +247,7 @@ disp(sprintf('total\tprogressive'));
 output=(sprintf([num2str(length(trackstat.progressive)), '\t' num2str(sum(trackstat.progressive))]));
 disp(output)
 clipboard('copy',output)
+out=output;
 
 end
              
