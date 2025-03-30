@@ -40,23 +40,75 @@ classdef correlationAnalysis<interfaces.SEEvaluationProcessor
             zdist=50;
             zpos=p.zrange(1):zdist:p.zrange(2);
             zwidth=100;
+            ydist=50;
+            ywidth=100;
+            ypos=-p.width/2:ydist:p.width/2;
+            [acimxy,nx,ny,imxy]=ac2dslices(xr(inroixy&inz),yr(inroixy&inz),locs.znm(inroixy&inz),[-linelen/2 linelen/2], [-1 1]*p.width/2, p.pixrec, zpos, zwidth);
+            [acimxz,nxz,nz,imxz]=ac2dslices(xr(inroixy&inz),locs.znm(inroixy&inz),yr(inroixy&inz),[-linelen/2 linelen/2], p.zrange, p.pixrec, ypos, ywidth);
+            acimxy(end,:)=max(acimxy(:));
+            % axac=obj.setoutput("cc2d");
+            % sim=size(acimxz,1);
+            acimt=vertcat(acimxy,acimxz);acimt=acimt/max(acimt(:));
+            % imagesc(axac,vertcat(acimxy,acimxz(round(sim*.25):round(sim*.75),:)))
+            % imagesc(axac,vertcat(acimxy,acimxz))
+            % axis(axac,"equal")
+            imxy=imgaussfilt(imxy,1);imxz=imgaussfilt(imxz,01);
+            imxy=imxy/quantile(imxy(:),.99);
+            imxy(end,:)=1;
+            imxz=imxz/quantile(imxz(:),.99);
+            imt=vertcat(imxy,imxz);
+            imt(imt>1)=1;
+            axim=obj.setoutput("img");
+            imt(:,end)=max(imt(:));
 
-            ywidth=50;
-            ypos=-p.width/2:ywidth:p.width/2;
-            [acimxy,nx,ny]=ac2dslices(xr(inroixy&inz),yr(inroixy&inz),locs.znm(inroixy&inz),[-linelen/2 linelen/2], [-1 1]*p.width/2, p.pixrec, zpos, zwidth);
-            [acimxz,nxz,nz]=ac2dslices(xr(inroixy&inz),locs.znm(inroixy&inz),yr(inroixy&inz),[-linelen/2 linelen/2], p.zrange, p.pixrec, ypos, ywidth);
+            imdisp=horzcat(imt,acimt);
+            nxd=(1:size(imdisp,2))*p.pixrec;
+            nyd=(1:size(imdisp,1))*p.pixrec;
+
+            scalebarlen=round(100/p.pixrec);
+            imdisp(end-2,4:4+scalebarlen-1)=max(imdisp(:));
+            imagesc(axim,nxd,nyd,imdisp)
+            axis(axim,"equal")
+            % colormap(axim,"hot")
             
-            axac=obj.setoutput("cc2d");
-            imagesc(axac,vertcat(acimxy,acimxz))
+            wins=200/p.pixrec/2;
+            midpxy=ceil(size(acimxy)/2);
+            acxyzoom=acimxy(midpxy(1)-wins:midpxy(1)+wins,midpxy(2)-wins:midpxy(2)+wins);
+            midpxz=ceil(size(acimxz)/2);
+            acxzzoom=acimxz(midpxz(1)-wins:midpxz(1)+wins,midpxz(2)-wins:midpxz(2)+wins);
+            acxyzoom(:,end)=max(acxyzoom(:));
+
+
+            axac=obj.setoutput("cc2dz");
+
+            imdispz=horzcat(acxyzoom,acxzzoom);
+            nxd=(1:size(imdispz,2))*p.pixrec;
+            nyd=(1:size(imdispz,1))*p.pixrec;
+
+            scalebarlen=round(100/p.pixrec);
+            imdispz(end-2,4:4+scalebarlen-1)=max(imdispz(:));
+
+            imagesc(axac,nxd,nyd,imdispz)
             axis(axac,"equal")
 
+
             axprofiles=obj.setoutput("profiles");
-            px=mean(acimxy,1);
-            py=mean(acimxy,2);
-            pz=mean(acimxz,2);
-            pzx=mean(acimxz,1);
-            plot(axprofiles,nx(ceil(end/2):end),px(ceil(end/2):end),ny(ceil(end/2):end),py(ceil(end/2):end),nz(ceil(end/2):end),pz(ceil(end/2):end),nx(ceil(end/2):end),pzx(ceil(end/2):end))
-            legend(axprofiles,"x","y","z","x(z)")
+            
+            winprof=round(5/2);
+            midp=ceil(size(acimxy)/2);        
+            px=mean(acimxy(midp(1)-winprof:midp(1)+winprof,:),1);
+            midpz=ceil(size(acimxz)/2);        
+            pz=mean(acimxz(midpz(1)-winprof:midpz(1)+winprof,:),1);
+
+            % py=mean(acimxy,2);
+            % pz=mean(acimxz,2);
+            % pzx=mean(acimxz,1);
+            hold(axprofiles,"off")
+            plot(axprofiles,nx(ceil(end/2):end),px(ceil(end/2):end));%,ny(ceil(end/2):end),py(ceil(end/2):end),nz(ceil(end/2):end),pz(ceil(end/2):end),nx(ceil(end/2):end),pzx(ceil(end/2):end))
+             hold(axprofiles,"on")
+            plot(axprofiles,nx(ceil(end/2):end),pz(ceil(end/2):end));
+            % legend(axprofiles,"x","y","z","x(z)")
+
             out.cc.acxy=acimxy;
             out.cc.acxz=acimxz;
         end
@@ -68,14 +120,16 @@ classdef correlationAnalysis<interfaces.SEEvaluationProcessor
 end
 
 
-function [acim,nx,ny]=ac2dslices(x,y,z,xrange, yrange, pixelsize, zpos, zwidth)
+function [acim,nx,ny,imtot]=ac2dslices(x,y,z,xrange, yrange, pixelsize, zpos, zwidth)
     nx=xrange(1):pixelsize:xrange(2);
     ny=yrange(1):pixelsize:yrange(2);
     acim=zeros(length(ny)-1,length(nx)-1);
+    imtot=zeros(length(ny)-1,length(nx)-1);
     for k=1:length(zpos)
         inz=z>=zpos(k) & z<zpos(k)+zwidth;
         img=histcounts2(y(inz),x(inz),ny,nx);
         acim=acim+accorr2fft(img);
+        imtot=imtot+img;
     end
     acim=acim/length(zpos);
     acim(ceil(length(ny)/2),ceil(length(nx)/2))=NaN;        
