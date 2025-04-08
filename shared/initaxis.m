@@ -54,6 +54,6 @@ elseif isa(handle,'matlab.ui.Figure')
 end
 tabgroup.SelectedTab=tab;
 state=tab.Parent.Parent.Visible;
- axes(ax);
+ % axes(ax); %%%%XXXXX taken out
  fig=tab.Parent.Parent;
  fig.Visible=state;

@@ -79,7 +79,6 @@ for k=1:length(usetracks)
         continue
     end
 
-
     xh=locs.xnm(tind);yh=locs.ynm(tind);fh=locs.frame(tind);
     trackstat.lennmstartend(iduset)=sqrt((xh(end)-xh(1)).^2+(yh(end)-yh(1)).^2);
         
@@ -227,12 +226,12 @@ end
 
     axis(ax,'ij');
     axis(ax,'equal');
-
+ trackstat.coprogressive=(trackstat.channel==1 & trackstat.comovement & trackstat.progressive & trackstat.progressivepartner);
 % Plot cotracks vs time
 %%
 %only both good
 if contains(p.showtraces.selection,'progressive co-tracks')
-    trackstat.coprogressive=(trackstat.channel==1 & trackstat.comovement & trackstat.progressive & trackstat.progressivepartner);
+   
     goodpairs=find(trackstat.coprogressive);
     figure;
     % numrows=ceil(length(goodpairs)/5);
@@ -268,13 +267,41 @@ end
 
 % Calculate statistics
 disp(sprintf('ch1\tch2\tch1prog\tch2prog\tdualcol\tch12progr'));
-output=(sprintf([num2str(sum(trackstat.channel==1)), '\t' num2str(sum(trackstat.channel==2)),...
-    '\t' num2str(sum(trackstat.channel==1 & trackstat.progressive)), ...
-    '\t' num2str(sum(trackstat.channel==2 & trackstat.progressive)), ...
-    '\t' num2str(sum(trackstat.partnertrackid>0)/2), ...
-    '\t' num2str(sum(trackstat.coprogressive))]));
+
+% extracts filename from file path:
+    filePath = string(obj.getPar('lastSMLFile'));
+    % Find all occurrences of the substring
+    slash_indices = strfind(filePath, '/');
+    % If the substring is found
+    if ~isempty(slash_indices)
+        % Get the last occurrence index
+        lastSlashIndex = slash_indices(end);
+        % Extract the substring after the last occurrence
+        fileName = extractAfter(filePath, lastSlashIndex);
+    else
+        fileName = filePath;
+    end
+
+% % old output:
+% output=(sprintf([num2str(sum(trackstat.channel==1)), '\t' num2str(sum(trackstat.channel==2)),...
+%     '\t' num2str(sum(trackstat.channel==1 & trackstat.progressive)), ...
+%     '\t' num2str(sum(trackstat.channel==2 & trackstat.progressive)), ...
+%     '\t' num2str(sum(trackstat.partnertrackid>0)/2), ...
+%     '\t' num2str(sum(trackstat.coprogressive))]));
+
+% new output:
+output=(table(fileName,... 
+    sum(trackstat.channel==1), ...
+    sum(trackstat.channel==2), ...
+    sum(trackstat.channel==1 & trackstat.progressive), ...
+    sum(trackstat.channel==2 & trackstat.progressive), ...
+    sum(trackstat.partnertrackid>0)/2, ...
+    sum(trackstat.coprogressive),...
+    'VariableNames', {'Filename','ch1', 'ch2', 'ch1_prog','ch2_prog', 'dual', 'dual_prog'}));
+
 disp(output)
-clipboard('copy',output)
+out=output;
+% clipboard('copy',output)
 
 %%
 %add to movie

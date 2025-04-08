@@ -243,7 +243,6 @@ end
 
 % Calculate statistics
 % disp(sprintf('total\tprogressive'));
-% output=(sprintf([num2str(length(trackstat.progressive)), '\t' num2str(sum(trackstat.progressive))]));
 
 % extracts filename from file path:
     filePath = string(obj.getPar('lastSMLFile'));
@@ -259,10 +258,14 @@ end
         fileName = filePath;
     end
 
-output=(table(fileName,length(trackstat.progressive), sum(trackstat.progressive), 'VariableNames', {'Filename','Total', 'Progressive'}));
+% old output:
+    % output=(sprintf([num2str(length(trackstat.progressive)), '\t' num2str(sum(trackstat.progressive))]));
+% new output:
+    output=(table(fileName,length(trackstat.progressive), sum(trackstat.progressive), 'VariableNames', {'Filename','Total', 'Progressive'}));
+
 disp(output)
-% clipboard('copy',output)
 out=output;
+% clipboard('copy',output)
 
 end
              
