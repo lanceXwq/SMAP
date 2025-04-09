@@ -99,7 +99,7 @@ longtracks=locs.track_length_new>minlenframes;
 
 
 inchannel=locs.channel==1;
-sum(inchannel)
+% sum(inchannel)
 
 
 indr=find((intrack&longtracks&inchannel));
@@ -110,7 +110,7 @@ locr.track_id=locs.track_id(indr);
 
 
 inchannel2=locs.channel==2;
-sum(inchannel2)
+% sum(inchannel2)
 indt=find((intrack&longtracks&inchannel2));
 loct.x=locs.xnm(indt);
 loct.y=locs.ynm(indt);
@@ -266,7 +266,6 @@ if contains(p.showtraces.selection,'progressive co-tracks')
 end
 
 % Calculate statistics
-disp(sprintf('ch1\tch2\tch1prog\tch2prog\tdualcol\tch12progr'));
 
 % extracts filename from file path:
     filePath = string(obj.getPar('lastSMLFile'));
@@ -283,6 +282,7 @@ disp(sprintf('ch1\tch2\tch1prog\tch2prog\tdualcol\tch12progr'));
     end
 
 % % old output:
+% disp(sprintf('ch1\tch2\tch1prog\tch2prog\tdualcol\tch12progr'));
 % output=(sprintf([num2str(sum(trackstat.channel==1)), '\t' num2str(sum(trackstat.channel==2)),...
 %     '\t' num2str(sum(trackstat.channel==1 & trackstat.progressive)), ...
 %     '\t' num2str(sum(trackstat.channel==2 & trackstat.progressive)), ...
