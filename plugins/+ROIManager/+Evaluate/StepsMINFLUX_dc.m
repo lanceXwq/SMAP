@@ -176,6 +176,33 @@ classdef StepsMINFLUX_dc<interfaces.SEEvaluationProcessor
            xlabel(axyt,'time ')
            ylabel(axyt,'y (nm)')
          
+
+           obj.coord1.xr=xr1;obj.coord1.yr=yr1;obj.coord1.time=time1;obj.coord1.timeplot=time1-min(time1);
+           obj.coord1.x=x1;obj.coord1.y=y1;
+           obj.coord2.xr=xr2;obj.coord2.yr=yr2;obj.coord2.time=time2;obj.coord2.timeplot=time2-min(time1);
+           obj.coord2.x=x2;obj.coord2.y=y2;
+            
+           out.id2=id2;
+           out.id1=id;
+
+           axxtrs=obj.setoutput('xr_step');
+           hold(axxtrs,'off')
+
+
+
+           try
+               s1=obj.site.evaluation.StepsMINFLUX.steps;
+               s2=obj.site.evaluation.StepsMINFLUX_2.steps;
+               plot(axxtrs,obj.coord1.timeplot,xr1,[p.col1 '-'], obj.coord2.timeplot,xr2,[p.col2 '-']);
+               hold(axxtrs,'on')
+               stairs(axxtrs,[s1.steptime ;max(obj.coord1.timeplot)],[s1.stepvalue ;s1.stepvalue(end)],p.col1);
+               dt=obj.coord1.time(1)-obj.coord2.time(1);
+               stairs(axxtrs,[s2.steptime ;max(obj.coord2.timeplot)]-dt,[s2.stepvalue ;s2.stepvalue(end)],p.col2);
+               xlabel(axxtrs,'time ')
+               ylabel(axxtrs,'xrot (nm)')
+
+           catch err
+           end
            % axis(axyt,'equal')
             % if p.filtertrackmode
 %                 zf=z;
@@ -208,13 +235,7 @@ classdef StepsMINFLUX_dc<interfaces.SEEvaluationProcessor
             
 %            xr=x;yr=y;  %XXXX to not rotate
 
-           obj.coord1.xr=xr1;obj.coord1.yr=yr1;obj.coord1.time=time1;obj.coord1.timeplot=time1-min(time1);
-           obj.coord1.x=x1;obj.coord1.y=y1;
-           obj.coord2.xr=xr2;obj.coord2.yr=yr2;obj.coord2.time=time2;obj.coord2.timeplot=time2-min(time1);
-           obj.coord2.x=x2;obj.coord2.y=y2;
-            
-           out.id2=id2;
-           out.id1=id;
+
            % obj.coord1.z=z;  obj.coord1.zf=zf;
            % 
            % if  isempty(obj.steps) || p.refitalways
