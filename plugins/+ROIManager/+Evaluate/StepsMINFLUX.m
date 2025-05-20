@@ -523,6 +523,7 @@ end
 
 %xy plot
 goff=median(mod(obj.steps.stepvalue,16),'omitnan');
+goff=0; % XXXX
 obj.xyplotoffset=goff;
 % goff=0; %switch off shift 
 axxy=obj.setoutput('xy');

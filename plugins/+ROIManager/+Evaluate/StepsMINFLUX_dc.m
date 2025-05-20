@@ -135,8 +135,10 @@ classdef StepsMINFLUX_dc<interfaces.SEEvaluationProcessor
            out.angle=angle;
            out.rotcenter=[mean(x1),mean(y1)];
 
-           [xr2,yr2]=rotcoord(x2-mean(x1),y2-mean(y1),angle);
-           [xr1,yr1]=rotcoord(x1-mean(x1),y1-mean(y1),angle);
+           % [xr2,yr2]=rotcoord(x2-mean(x1),y2-mean(y1),angle);
+           % [xr1,yr1]=rotcoord(x1-mean(x1),y1-mean(y1),angle);
+           [xr2,yr2]=rotcoord(x2-out.rotcenter(1),y2-out.rotcenter(2),angle);
+           [xr1,yr1]=rotcoord(x1-out.rotcenter(1),y1-out.rotcenter(2),angle);
 
            axxyr=obj.setoutput('xyr');
            plot(axxyr,xr1,yr1,[p.col1 '.-'], xr2,yr2,[p.col2 '.-']);
