@@ -188,7 +188,7 @@ classdef StepsMINFLUX_dc<interfaces.SEEvaluationProcessor
            axxtrs=obj.setoutput('xr_step');
            hold(axxtrs,'off')
 
-
+         
 
            try
                s1=obj.site.evaluation.StepsMINFLUX.steps;
@@ -202,7 +202,13 @@ classdef StepsMINFLUX_dc<interfaces.SEEvaluationProcessor
                ylabel(axxtrs,'xrot (nm)')
 
            catch err
+               disp('no steps evaluated yet')
            end
+
+           
+
+
+
            % axis(axyt,'equal')
             % if p.filtertrackmode
 %                 zf=z;

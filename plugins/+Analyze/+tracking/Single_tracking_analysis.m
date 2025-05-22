@@ -99,12 +99,14 @@ longtracks=locs.track_length_new>minlenframes;
 
 
 
-indr=find((intrack&longtracks));
+% indr=find((intrack&longtracks));
 % locr.x=locs.xnm(indr);
 % locr.y=locs.ynm(indr);
 % locr.frame=locs.frame(indr);
 % locr.track_id=locs.track_id(indr);
-
+if isempty(locs.track_id)
+    disp('please use the SimpleTracking plugin first')
+end
 
 
 usetracks=unique(locs.track_id(intrack&longtracks));
@@ -237,6 +239,8 @@ if contains(p.showtraces.selection,'progressive')
         xlabel('x (nm)')
         ylabel('y (nm)')
         title("Id:"+goodpairs(k))
+
+        analyse_progressive_track(locs.xnm(id1),locs.ynm(id1),locs.frame(id1),trackstat.angle(goodpairs(k)))
 
     end
 end
