@@ -209,63 +209,99 @@ end
 % Plot cotracks vs time
 %%
 %only both good
-if contains(p.showtraces.selection,'progressive')
-    goodpairs=find(trackstat.progressive);
+goodpairs=find(trackstat.progressive);
+if contains(p.showtraces.selection,'progressive') 
     figure;
+   
+end
     % numrows=ceil(length(goodpairs)/5);
-    f=0;
-    for k=1:length(goodpairs)
-        if 2*k-f>30
+f=0;
+v=zeros(length(goodpairs),1);runlength=v; runtime=v;
+goodv=true(length(goodpairs),1);
+plotind=1;
+for k=1:length(goodpairs)
+    % subplot(5,6,2*k-1-f)
+    % hold off
+    id1=locs.track_id==goodpairs(k);
+    statv=analyse_progressive_track(locs.xnm(id1),locs.ynm(id1),locs.frame(id1));
+
+
+        tmin=(min(locs.frame(id1)));
+        tmax=(max(locs.frame(id1)));
+        % 
+        % [x1,y1]=rotcoord(locs.xnm(id1)-mean(locs.xnm(id1)),locs.ynm(id1)-mean(locs.ynm(id1)),trackstat.angle(goodpairs(k)));
+        % % [x2,y2]=rotcoord(locs.xnm(id2)-mean(locs.xnm(id2)),locs.ynm(id2)-mean(locs.ynm(id2)),trackstat.angle(pid));
+        % plot(locs.frame(id1),x1,'.-')
+        % hold on
+        
+        % xlabel('time(frame)')
+        % ylabel('xrot (nm)')
+        % subplot(5,6,2*k-f)
+        % plot(locs.xnm(id1)-mean(locs.xnm(id1)),locs.ynm(id1)-mean(locs.ynm(id1)),'.-')
+        % axis equal
+        % xlabel('x (nm)')
+        % ylabel('y (nm)')
+    exposuretimes=exposuretime/1000;
+    % statv
+    if statv.gof>3 || statv.numpoints<minlenframes || statv.v<minvelocity
+        goodv(k)=false;
+    end
+    
+    v(k)=statv.v/exposuretimes;
+    runlength(k)=statv.len;
+    runtime(k)=statv.numpoints;
+    ff='%2.0f';
+    if contains(p.showtraces.selection,'progressive') && goodv(k)
+        if 2*plotind-f>30
             f=f+30;
             figure
         end
-        subplot(5,6,2*k-1-f)
-        hold off
-        id1=locs.track_id==goodpairs(k);
-       
-        tmin=(min(locs.frame(id1)));
-        tmax=(max(locs.frame(id1)));
-    
-        [x1,y1]=rotcoord(locs.xnm(id1)-mean(locs.xnm(id1)),locs.ynm(id1)-mean(locs.ynm(id1)),trackstat.angle(goodpairs(k)));
-        % [x2,y2]=rotcoord(locs.xnm(id2)-mean(locs.xnm(id2)),locs.ynm(id2)-mean(locs.ynm(id2)),trackstat.angle(pid));
-        plot(locs.frame(id1),x1,'.-')
-        hold on
-        title(['frame: ' num2str(tmin) ':', num2str(tmax),', x: ' num2str(mean(locs.xpix(id1)),'%3.0f') ', y: ' num2str(mean(locs.ypix(id1)),'%3.0f')])  
-        xlabel('time(frame)')
-        ylabel('xrot (nm)')
-        subplot(5,6,2*k-f)
-        plot(locs.xnm(id1)-mean(locs.xnm(id1)),locs.ynm(id1)-mean(locs.ynm(id1)),'.-')
-        axis equal
-        xlabel('x (nm)')
-        ylabel('y (nm)')
-        title("Id:"+goodpairs(k))
+        ax1=subplot(5,6,2*plotind-1-f);
+        ax2=subplot(5,6,2*plotind-f);    
+        plotind=plotind+1;
 
-        analyse_progressive_track(locs.xnm(id1),locs.ynm(id1),locs.frame(id1),trackstat.angle(goodpairs(k)))
-
-    end
+        plot(ax1,statv.plot.time,statv.plot.xr,statv.plot.time,statv.plot.xfitr);
+        xlabel(ax1,'time')
+        ylabel(ax1,'xrot')
+        plot(ax2,statv.plot.x,statv.plot.y,statv.plot.xfit,statv.plot.yfit);
+        axis(ax2,'equal')
+        xlabel(ax2,'xrot')
+        ylabel(ax2,'yrot')
+% end
+        title(ax2,['f: ' num2str(tmin) ':', num2str(tmax),', x: ' num2str(mean(locs.xpix(id1)),'%3.0f') ', y: ' num2str(mean(locs.ypix(id1)),'%3.0f')])  
+        title(ax1,"Id:"+goodpairs(k)+ ", v: " + num2str(v(k),ff))
+    end        
 end
 
-% Calculate statistics
-% disp(sprintf('total\tprogressive'));
+axv=obj.initaxis('v');
+histogram(axv,v(goodv))
+title(axv, "v nm/s, mean "+mean(v(goodv)) + ", median " + median(v(goodv)));
+axr=obj.initaxis('runlength');
+histogram(axr,runlength(goodv))
+title(axr,"length nm, mean "+mean(runlength(goodv)) + ", median " + median(runlength(goodv)));
+axrt=obj.initaxis('runtime');
+histogram(axrt,runtime(goodv))
+title(axrt,"length time frames, mean "+mean(runtime(goodv)) + ", median " + median(runtime(goodv)));
 
 % extracts filename from file path:
-    filePath = string(obj.getPar('lastSMLFile'));
-    % Find all occurrences of the substring
-    slash_indices = strfind(filePath, '/');
-    % If the substring is found
-    if ~isempty(slash_indices)
-        % Get the last occurrence index
-        lastSlashIndex = slash_indices(end);
-        % Extract the substring after the last occurrence
-        fileName = extractAfter(filePath, lastSlashIndex);
-    else
-        fileName = filePath;
-    end
+filePath = string(obj.getPar('lastSMLFile'));
+% Find all occurrences of the substring
+slash_indices = strfind(filePath, '/');
+% If the substring is found
+if ~isempty(slash_indices)
+    % Get the last occurrence index
+    lastSlashIndex = slash_indices(end);
+    % Extract the substring after the last occurrence
+    fileName = extractAfter(filePath, lastSlashIndex);
+else
+    fileName = filePath;
+end
 
 % old output:
     % output=(sprintf([num2str(length(trackstat.progressive)), '\t' num2str(sum(trackstat.progressive))]));
 % new output:
-    output=(table(fileName,length(trackstat.progressive), sum(trackstat.progressive), 'VariableNames', {'Filename','Total', 'Progressive'}));
+    % outputo=(table(fileName,length(trackstat.lenframe), sum(trackstat.progressive), 'VariableNames', {'Filename','Total', 'Progressive'}))
+    output=(table(fileName,sum(trackstat.lenframe>=minlenframes), sum(goodv), mean(v(goodv)), mean(runlength(goodv)), mean(runtime(goodv)),'VariableNames', {'Filename','Total', 'Progressive','Velocity','runlength','runtime'}));
 
 disp(output)
 out=output;
