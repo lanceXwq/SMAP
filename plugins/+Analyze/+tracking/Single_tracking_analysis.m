@@ -125,43 +125,9 @@ validstats = validstats & trackstat.velocity < maxvelocity;
 
 trackstat.progressive=validstats;
 
-% comovement=false(size(trackstat.velocity));
-% progressivepartner=false(size(trackstat.velocity));
-% trackstat.channel=zeros(size(trackstat.velocity));
-
-
-% for k=1:length(usetracks)  
-    % idh=usetracks(k);
-    % indtr=locs.track_id==idh;
-
-    %look at co-movement
-    % pid=0;
-    % comovement(idh)=trackstat.partnertrackid(idh)>0;
-    % if comovement(idh) %&& validstats
-    %     partnerind=partner(indtr);
-    %     partnerids=locs.track_id(partnerind(partnerind>0));
-    %     % [pid,npart]=mode(partnerids);
-    %     trackstat.partnerids(idh)=pid;
-    % 
-    %     lenpartner=sum(locs.track_id==pid);
-    %     minduallength=min(sum(indtr),lenpartner);
-    % 
-    %     % comovement(idh)=comovement(idh) & npart>cotracklength;
-    %     % comovement(idh)=comovement(idh) & npart/minduallength>cotrackfraction;
-    %     progressivepartner(idh)=trackstat.progressive(pid);
-    % end
-    % trackstat.channel(idh)=mode(locs.channel(indtr));
-    
-% end
-
-% trackstat.comovement=comovement;
-% trackstat.progressivepartner=progressivepartner;
-
-
 % plot tracks
 
 ax=obj.initaxis('xy');
-
 cols=[1 0 1
       0 1 1];
       % 1 0 0 
@@ -181,16 +147,6 @@ for k=1:length(usetracks)
     lw=1;
     symb='-';
 
-    % if trackstat.comovement(idh)
-    %     if trackstat.channel(idh)==2
-    %             symb='x-';
-    %             msize=3;
-    %     else
-    %             symb='+-';
-    %             msize=7;
-    %             lw=2;            
-    %     end
-    % end
     hp=plot(ax,locs.xnm(indtr)/pixelsize(1)-roi(1),locs.ynm(indtr)/pixelsize(2)-roi(2),symb,'Color',cols(colind(idh),:),'LineWidth',lw,'Tag','test','MarkerSize',msize);
     hold(ax,"on")
     % pidlabel=0*locs.track_id(indtr)+trackstat.partnerids(idh);
