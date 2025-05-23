@@ -36,7 +36,7 @@ layers=find(obj.getPar('sr_layerson'));
 [locs,indin]=obj.locData.getloc({'xnm','ynm','time','tid','filenumber','thi'},'layer',layers,'position','roi','grouping','ungrouped');
 fhh=mode(locs.filenumber);
 tids0=locs.tid(locs.thi==0 & locs.filenumber==fhh);
-numloc=histcounts(tids0,1:max(tids0));
+numloc=histcounts(tids0,1:max(tids0)+1);
 id0=find(numloc>minlenlocs);
 SE=obj.locData.SE;
 if isempty(SE.cells)
