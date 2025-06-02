@@ -199,7 +199,7 @@ for k=1:length(goodpairs)
         % ylabel('y (nm)')
     exposuretimes=exposuretime/1000;
     % statv
-    if statv.gof>3 || statv.numpoints<minlenframes || statv.v<minvelocity
+    if statv.gof>3 || statv.numpoints<minlenframes || statv.v/exposuretimes<minvelocity
         goodv(k)=false;
     end
     
@@ -261,6 +261,9 @@ end
 
 disp(output)
 out=output;
+
+outputtracks=(table(repmat(string(fileName),sum(goodv),1), goodpairs(goodv),(v(goodv)), (runlength(goodv)), (runtime(goodv)),'VariableNames', {'Filename','ID','Velocity','runlength','runtime'}));
+
 % clipboard('copy',output)
 
 end
@@ -318,7 +321,7 @@ pard.lennmstartend.Width=.5;
 pard.velocityt.object=struct('String','velocity (nm/s) min','Style','text');
 pard.velocityt.position=[4,1];
 pard.velocityt.Width=1.5;
-pard.velocitymin.object=struct('String','200','Style','edit');
+pard.velocitymin.object=struct('String','10','Style','edit');
 pard.velocitymin.position=[4,2.5];
 pard.velocitymin.Width=.5;
 pard.velocitymt.object=struct('String','max','Style','text');
