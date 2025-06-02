@@ -263,7 +263,7 @@ disp(output)
 out=output;
 
 outputtracks=(table(repmat(string(fileName),sum(goodv),1), goodpairs(goodv),(v(goodv)), (runlength(goodv)), (runtime(goodv)),'VariableNames', {'Filename','ID','Velocity','runlength','runtime'}));
-
+disp(outputtracks)
 % clipboard('copy',output)
 
 end
