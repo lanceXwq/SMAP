@@ -252,6 +252,11 @@ if ~isempty(slash_indices)
 else
     fileName = filePath;
 end
+goodvi=find(goodv);
+fn=locs.filenumber(locs.track_id==goodpairs(goodvi(1)));
+fileslm=obj.getPar('filelist_long').String{fn};
+tablename=strrep(fileslm,'_sml.mat','_tracks.csv'); %if this does not work, replace fileslm by filePath
+[path,fileName2]=fileparts(fileslm); 
 
 % old output:
     % output=(sprintf([num2str(length(trackstat.progressive)), '\t' num2str(sum(trackstat.progressive))]));
@@ -263,7 +268,8 @@ disp(output)
 out=output;
 
 outputtracks=(table(repmat(string(fileName),sum(goodv),1), goodpairs(goodv),(v(goodv)), (runlength(goodv)), (runtime(goodv)),'VariableNames', {'Filename','ID','Velocity','runlength','runtime'}));
-disp(outputtracks)
+writetable(outputtracks,tablename)
+% disp(outputtracks)
 % clipboard('copy',output)
 
 end
