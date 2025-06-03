@@ -265,10 +265,11 @@ tablename=strrep(filePath,'_sml.mat','_tracks.csv'); %if this does not work, rep
     output=(table(fileName,sum(trackstat.lenframe>=minlenframes), sum(goodv), mean(v(goodv)), mean(runlength(goodv)), mean(runtime(goodv)),'VariableNames', {'Filename','Total', 'Progressive','Velocity','runlength','runtime'}));
 
 disp(output)
-out=output;
+out.summary=output;
 
 outputtracks=(table(repmat(string(fileName),sum(goodv),1), goodpairs(goodv),(v(goodv)), (runlength(goodv)), (runtime(goodv)),'VariableNames', {'Filename','ID','Velocity','runlength','runtime'}));
 writetable(outputtracks,tablename)
+out.tracks=outputtracks;
 % disp(outputtracks)
 % clipboard('copy',output)
 
