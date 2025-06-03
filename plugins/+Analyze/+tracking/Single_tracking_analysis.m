@@ -242,21 +242,21 @@ title(axrt,"length time frames, mean "+mean(runtime(goodv)) + ", median " + medi
 % extracts filename from file path:
 filePath = string(obj.getPar('lastSMLFile'));
 % Find all occurrences of the substring
-slash_indices = strfind(filePath, '/');
-% If the substring is found
-if ~isempty(slash_indices)
-    % Get the last occurrence index
-    lastSlashIndex = slash_indices(end);
-    % Extract the substring after the last occurrence
-    fileName = extractAfter(filePath, lastSlashIndex);
-else
-    fileName = filePath;
-end
+% slash_indices = strfind(filePath, '/');
+% % If the substring is found
+% if ~isempty(slash_indices)
+%     % Get the last occurrence index
+%     lastSlashIndex = slash_indices(end);
+%     % Extract the substring after the last occurrence
+%     fileName = extractAfter(filePath, lastSlashIndex);
+% else
+%     fileName = filePath;
+% end
 goodvi=find(goodv);
-fn=locs.filenumber(locs.track_id==goodpairs(goodvi(1)));
-fileslm=obj.getPar('filelist_long').String{fn};
-tablename=strrep(fileslm,'_sml.mat','_tracks.csv'); %if this does not work, replace fileslm by filePath
-[path,fileName2]=fileparts(fileslm); 
+% fn=locs.filenumber(locs.track_id==goodpairs(goodvi(1)));
+% fileslm=obj.getPar('filelist_long').String{fn};
+tablename=strrep(filePath,'_sml.mat','_tracks.csv'); %if this does not work, replace fileslm by filePath
+[path,fileName]=fileparts(filePath); 
 
 % old output:
     % output=(sprintf([num2str(length(trackstat.progressive)), '\t' num2str(sum(trackstat.progressive))]));

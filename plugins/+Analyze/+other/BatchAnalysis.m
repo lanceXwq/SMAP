@@ -65,7 +65,7 @@ classdef BatchAnalysis<interfaces.DialogProcessor
                    ahere=gabatch.children.(aplugins{a});
 %                    try
                        re=ahere.processgo;
-                       re
+                       re;
                        results.(aplugins{a}){f}=re;
                        
                        outfig=ahere.resultstabgroup.Parent;
