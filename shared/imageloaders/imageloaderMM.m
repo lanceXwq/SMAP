@@ -93,6 +93,24 @@ classdef imageloaderMM<interfaces.imageloaderSMAP
 %             framesd=max([img.lastAcquiredFrame,summarymetadata.get('Slices'),summarymetadata.get('Frames'),summarymetadata.get('Positions')]);
             allmd(end+1,:)={'frames direct',num2str(framesd)};
             
+          
+
+            %try to get real time difference
+            it0=obj.reader.getImageTags(0,0,0,0);
+            [~,imgpos]=readstack(obj,framesd);
+            ite=obj.reader.getImageTags(imgpos{:});
+            try
+            t0=it0.get('ElapsedTime-ms');
+            te=ite.get('ElapsedTime-ms');
+            dt=(te-t0)/(framesd+1);
+            catch err
+
+            t0b=it0.get('UserData').get('TimeStampMsec').get('scalar');
+            teb=ite.get('UserData').get('TimeStampMsec').get('scalar');
+            dt=(str2double(teb)-str2double(t0b))/(framesd+1);
+            end
+            allmd(end+1,:)={'timediff direct',num2str(dt)};
+
             allmd=vertcat(allmd,alls);
             obj.allmetadatatags=allmd;
         end
@@ -105,7 +123,7 @@ end
 
 
 
-function image=readstack(obj,imagenumber)
+function [image,imgpos]=readstack(obj,imagenumber)
 img=obj.reader.getImage(0,0,imagenumber-1,0);
 imgpos={0,0,imagenumber-1,0};
 if isempty(img)
@@ -124,8 +142,9 @@ image=img.pix;
 if isempty(image)
     return
 end
+imgmeta=obj.reader.getImageTags(imgpos{:});
 % if numel(image)==obj.metadata.Width*obj.metadata.Height
-    image=reshape(image,obj.metadata.Width,obj.metadata.Height)';
+    image=reshape(image,imgmeta.get('Width'),imgmeta.get('Height'))';
     if isa(image,'int16')
         image2=uint16(image);
         ind=image<0;
@@ -135,7 +154,7 @@ end
     end
 
 if ~isempty(obj.readoutimgtags)
-    imgmeta=obj.reader.getImageTags(imgpos{:});
+    
     if obj.init
         obj.imtags=zeros(length(obj.readoutimgtags),obj.metadata.numberOfFrames);
 %          for k=1:length(obj.readoutimgtags)
