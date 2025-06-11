@@ -284,6 +284,7 @@ if ~options.append
         tempfile = 'temporal.tif';
     else
         tempfile = '._temporal.tif';
+        tempfile = 'temporal.tif';
     end
     pfad=fileparts(path);
     tempfile=[pfad filesep  tempfile];

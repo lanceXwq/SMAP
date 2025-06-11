@@ -338,7 +338,10 @@ if p.makemovie && ~isempty(p.tiffile)
         if splitvert
             imcomb(:,:,1,k)=img(1:sx,:);
             % imcomb(:,:,3,k)=img(:,1:sx);
-            imcomb(:,:,2,k)=imgt(1:sx,:);             
+            imcomb(:,:,2,k)=imgt(1:sx,:);     
+
+            % imcomb(:,:,1,k)=img(sx:end,:);
+            % imcomb(:,:,2,k)=imgt(sx:end,:);  
         else
             imcomb(:,:,1,k)=img(:,1:sx);
             % imcomb(:,:,3,k)=img(:,1:sx);
