@@ -84,14 +84,18 @@ classdef imageloaderMM<interfaces.imageloaderSMAP
             end
             try
                 po=summarymetadata.get('Positions');
-            end            
-            possibleframes=[img.lastAcquiredFrame,sl,fr,po];
+            end       
+            try
+                ik=size(img.imageKeys);
+            end
+            possibleframes=[img.lastAcquiredFrame,sl,fr,po,ik];
             framesd=min(possibleframes(possibleframes>100));
             if isempty(framesd)
                 framesd=max(possibleframes);
             end
 %             framesd=max([img.lastAcquiredFrame,summarymetadata.get('Slices'),summarymetadata.get('Frames'),summarymetadata.get('Positions')]);
-            allmd(end+1,:)={'frames direct',num2str(framesd)};
+            % allmd(end+1,:)={'frames direct',num2str(framesd)};
+            allmd(end+1,:)={'frames direct',num2str(ik)};
             
           
 
@@ -104,10 +108,13 @@ classdef imageloaderMM<interfaces.imageloaderSMAP
             te=ite.get('ElapsedTime-ms');
             dt=(te-t0)/(framesd+1);
             catch err
-
+            try 
             t0b=it0.get('UserData').get('TimeStampMsec').get('scalar');
             teb=ite.get('UserData').get('TimeStampMsec').get('scalar');
             dt=(str2double(teb)-str2double(t0b))/(framesd+1);
+            catch err
+                dt=NaN;
+            end
             end
             allmd(end+1,:)={'timediff direct',num2str(dt)};
 
