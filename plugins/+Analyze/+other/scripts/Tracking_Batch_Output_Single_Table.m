@@ -8,7 +8,9 @@ else
     end
 end
 
-table_out=var{1};
-for k=2:length(var)
-    table_out=vertcat(table_out,var{k});
+track_summary=[];
+track_details=[];
+for k=1:length(var)
+    track_summary=vertcat(track_summary,var{k}.summary);
+    track_details=vertcat(track_details,var{k}.tracks);
 end
