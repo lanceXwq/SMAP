@@ -179,6 +179,9 @@ results=obj.run(p);
 
 if ~isempty(results)
     obj.setAutoResults(obj.pluginpath,results);
+    S = struct('type', '.', 'subs', obj.pluginpath);
+    obj.locData.pluginresults = subsasgn(obj.locData.pluginresults, S, results);
+
     if isfield(results,'clipboard')
         cl=results.clipboard;
         if ~iscell(cl)

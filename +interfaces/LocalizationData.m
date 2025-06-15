@@ -9,6 +9,7 @@ classdef LocalizationData<interfaces.GuiParameterInterface
         SE %siteexplorer object, linked here why?
         history={};
         warning=false;
+        pluginresults;
 %         iscopy=true;
     end
     

@@ -62,7 +62,11 @@ trackstat.stdlong=zeros(max(usetracks),1);
 trackstat.lenframe=zeros(max(usetracks),1);
 trackstat.velocity=zeros(max(usetracks),1);
 locs.track_length_new=zeros(size(locs.xnm));
-
+trackstat.processive=zeros(max(usetracks),1);
+trackstat.runtime=zeros(max(usetracks),1);
+trackstat.runlength=zeros(max(usetracks),1);
+trackstat.x0=zeros(max(usetracks),1);
+trackstat.y0=zeros(max(usetracks),1);
 
 for k=1:length(usetracks)
     iduset=usetracks(k);
@@ -95,7 +99,7 @@ usetracks=unique(locs.track_id(intrack&longtracks)); %these are the interesting 
 validstats= trackstat.lenframe>minlenframes;
 validstats = validstats & trackstat.stdshort./trackstat.stdlong<aspectratio;
 validstats = validstats & trackstat.lennmstartend > lennmstartend;
-trackstat.processive=validstats;
+trackstat.filter=validstats;
 
 % plot tracks
 ax=obj.initaxis('xy');
@@ -105,7 +109,7 @@ colgood=[0 0 0];
 msize=3;
 lw=1;
 symb='-';
-colind=(trackstat.processive)+1;   
+colind=(trackstat.filter)+1;   
 
 if p.plottracks
 for k=1:length(usetracks)  
@@ -119,7 +123,7 @@ axis(ax,'equal');
 end
 
 % Analyze processivity
-processiveids=find(trackstat.processive);
+processiveids=find(trackstat.filter);
 if contains(p.showtraces.selection,'processive') 
     figure; 
     f=0;
@@ -139,13 +143,15 @@ for k=1:length(processiveids)
     end
     
     v(k)=statv.v/exposuretimes;
-    trackstat.velocity(idt)=v(k);
+    trackstat.velocity(processiveids(k))=v(k);
     rmse(k)=statv.rmse; gof(k)=statv.gof;
     runlength(k)=statv.len;
-    trackstat.runlength(idt)=runlength(k);
+    trackstat.runlength(processiveids(k))=runlength(k);
     runtime(k)=statv.numpoints;
-    trackstat.runtime(idt)=runtime(k);
-
+    trackstat.runtime(processiveids(k))=runtime(k);
+    trackstat.processive(processiveids(k))=goodv(k);
+    trackstat.x0=statv.x0;
+    trackstat.y0=statv.y0;
     ff='%2.0f';
     %plot good tracks
     if contains(p.showtraces.selection,'processive') && goodv(k)
@@ -177,9 +183,9 @@ for k=1:length(processiveids)
         hp.DataTipTemplate.DataTipRows=alldatatip;
     end
 end
-
+% trackstat.processive=processiveids;
 out.tracks=trackstat;
-out.processive=processiveids;
+out.processive=trackstat.processive;
 out.trackids=usetracks;
 
 axv=obj.initaxis('v');
