@@ -29,18 +29,18 @@ end
 function out=runi(obj,p)
 out=[];
 %filters
-minlenframes=p.minlenframes;
+% minlenframes=p.minlenframes;
 maxd=p.maxd; % nm max distance to associate localizations
 
 cotracklength=p.cotracklength; %minimum data poits associated between tracks
 cotrackfraction = p.cotrackfraction; %minimum fraction of localizations associated
 
 % test directed movement
-aspectratio=p.aspectratio; %should be below this for directed motion.
-lennmstartend=p.lennmstartend; % minimum endpoint- startpoint
-lennmmin=0; %minimum of largest extenstion standard deviation (not so useful)
-minvelocity=p.velocitymin; %nm/s
-maxvelocity=p.velocitymax;
+% aspectratio=p.aspectratio; %should be below this for directed motion.
+% lennmstartend=p.lennmstartend; % minimum endpoint- startpoint
+% lennmmin=0; %minimum of largest extenstion standard deviation (not so useful)
+% minvelocity=p.velocitymin; %nm/s
+% maxvelocity=p.velocitymax;
 
 % visualizing co-tracks
 % onlyprogressivecotracks=true; %only when both partners are progressive
@@ -52,12 +52,8 @@ layers=find(obj.getPar('sr_layerson'));
 obj.locData.filter; %does this fix the bug?
 [locs,indin]=obj.locData.getloc({'xnm','ynm','znm','xpix','ypix','frame','track_id','channel','track_length','layer','filenumber'},'layer',layers,'position','roi','grouping','ungrouped');
 
-% unique(locs.channel)
+% exposuretime=obj.locData.files.file(locs.filenumber(1)).info.exposure;
 
-exposuretime=obj.locData.files.file(locs.filenumber(1)).info.exposure;
-
-% XXX if exposure is wront, overwrite here
-% exposuretime= 10
 
 % test directed movement, calculate statistics
 usetracks=unique(locs.track_id(locs.track_id>0));
@@ -386,13 +382,13 @@ end
              
 function pard=guidef(obj)
 
-pard.minlenframest.object=struct('String','Min length track (frames)','Style','text');
-pard.minlenframest.position=[1,1];
-pard.minlenframest.Width=1.5;
-
-pard.minlenframes.object=struct('String','5','Style','edit');
-pard.minlenframes.position=[1,2.5];
-pard.minlenframes.Width=.5;
+% pard.minlenframest.object=struct('String','Min length track (frames)','Style','text');
+% pard.minlenframest.position=[1,1];
+% pard.minlenframest.Width=1.5;
+% 
+% pard.minlenframes.object=struct('String','5','Style','edit');
+% pard.minlenframes.position=[1,2.5];
+% pard.minlenframes.Width=.5;
 
 pard.maxdt.object=struct('String','Max distance (nm)','Style','text');
 pard.maxdt.position=[1,3];
@@ -402,23 +398,8 @@ pard.maxd.object=struct('String','200','Style','edit');
 pard.maxd.position=[1,4.5];
 pard.maxd.Width=.5;
 
-pard.dmt.object=struct('String','directed movement:','Style','text');
-pard.dmt.position=[2,1];
-
-pard.aspectratiot.object=struct('String','aspect ratio <','Style','text');
-pard.aspectratiot.position=[2,2];
-pard.aspectratiot.Width=1.;
-pard.aspectratio.object=struct('String','1','Style','edit');
-pard.aspectratio.position=[2,2.7];
-pard.aspectratio.Width=.5;
 
 
-pard.lennmstartendt.object=struct('String','start-end (nm) >','Style','text');
-pard.lennmstartendt.position=[2,3.5];
-pard.lennmstartendt.Width=1.;
-pard.lennmstartend.object=struct('String','300','Style','edit');
-pard.lennmstartend.position=[2,4.5];
-pard.lennmstartend.Width=.5;
 
 pard.cotracklenght.object=struct('String','co track length (frames) >','Style','text');
 pard.cotracklenght.position=[3,1];
@@ -434,23 +415,12 @@ pard.cotrackfraction.object=struct('String','0','Style','edit');
 pard.cotrackfraction.position=[3,4.5];
 pard.cotrackfraction.Width=.5;
 
-pard.velocityt.object=struct('String','velocity (nm/s) min','Style','text');
-pard.velocityt.position=[4,1];
-pard.velocityt.Width=1.5;
-pard.velocitymin.object=struct('String','200','Style','edit');
-pard.velocitymin.position=[4,2.5];
-pard.velocitymin.Width=.5;
-pard.velocitymt.object=struct('String','max','Style','text');
-pard.velocitymt.position=[4,4];
-pard.velocitymt.Width=0.5;
-pard.velocitymax.object=struct('String','1500','Style','edit');
-pard.velocitymax.position=[4,4.5];
-pard.velocitymax.Width=.5;
+
 
 pard.showt.object=struct('String','Show:','Style','text');
 pard.showt.position=[5,1];
 pard.showt.Width=0.5;
-pard.showtraces.object=struct('String',{{'progressive co-tracks','none'}},'Style','popupmenu');
+pard.showtraces.object=struct('String',{{'none','progressive co-tracks'}},'Style','popupmenu');
 pard.showtraces.position=[5,1.5];
 pard.showtraces.Width=1.5;
 
