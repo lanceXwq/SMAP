@@ -34,26 +34,8 @@ else
     error("Run Single_trackin_analysis first")
 end
 %filters
-% minlenframes=p.minlenframes;
 maxd=p.maxd; % nm max distance to associate localizations
-
-cotracklength=p.cotracklength; %minimum data poits associated between tracks
-cotrackfraction = p.cotrackfraction; %minimum fraction of localizations associated
-
-% test directed movement
-% aspectratio=p.aspectratio; %should be below this for directed motion.
-% lennmstartend=p.lennmstartend; % minimum endpoint- startpoint
-% lennmmin=0; %minimum of largest extenstion standard deviation (not so useful)
-% minvelocity=p.velocitymin; %nm/s
-% maxvelocity=p.velocitymax;
-
-% visualizing co-tracks
-% onlyprocessivecotracks=true; %only when both partners are processive
-% markintiffile=false;
-% tiffile=fout;
-% tiffile='/Users/ries/datalocal/2color_kinesin/25_50ms_561nm01_640nm02_600w52_676w37_1_MMStack_Default_combined.tif';
 layers=find(obj.getPar('sr_layerson'));
-% obj=g;
 obj.locData.filter; %does this fix the bug?
 [locs,indin]=obj.locData.getloc({'xnm','ynm','znm','xpix','ypix','frame','track_id','channel','track_length','layer','filenumber'},'layer',layers,'position','roi','grouping','ungrouped');
 
@@ -64,40 +46,11 @@ pixelsize=obj.locData.files.file(locs.filenumber(1)).info.cam_pixelsize_um*1000;
 trackids=singletracks.trackids; %long tracks, id>0
 usetracks=unique(trackids);
 trackstat=singletracks.tracks;
-% test directed movement, calculate statistics
-% usetracks=unique(locs.track_id(locs.track_id>0));
-% trackstat.lennmstartend=zeros(max(usetracks),1);
-% trackstat.stdshort=zeros(max(usetracks),1);
-% trackstat.stdlong=zeros(max(usetracks),1);
-% trackstat.lenframe=zeros(max(usetracks),1);
-% trackstat.partnertrackid=zeros(max(usetracks),1);
-% trackstat.velocity=zeros(max(usetracks),1);
-% locs.track_length_new=zeros(size(locs.xnm));
+
 trackstat.partnerids=zeros(max(usetracks),1);
 trackstat.partnertrackid=zeros(max(usetracks),1);
-% for k=1:length(usetracks)
-%     iduset=usetracks(k);
-%     tind=find(locs.track_id==iduset);
-%     trackstat.lenframe(iduset)=length(tind);
-%     locs.track_length_new(tind)=trackstat.lenframe(iduset);
-%     if trackstat.lenframe(iduset)<2
-%         continue
-%     end
-% 
-%     xh=locs.xnm(tind);yh=locs.ynm(tind);fh=locs.frame(tind);
-%     trackstat.lennmstartend(iduset)=sqrt((xh(end)-xh(1)).^2+(yh(end)-yh(1)).^2);
-% 
-%     c = cov(xh-mean(xh), yh-mean(yh));
-%     [a, ev] = eig(c);
-%     [ev,ind] = sort(diag(ev));
-%     [xa, ya] = deal(a(1,ind(end)), a(2,ind(end)));
-%     trackstat.angle(iduset)=cart2pol(xa, ya);
-%     trackstat.stdshort(iduset)=real(sqrt(ev(1)));
-%     trackstat.stdlong(iduset)=real(sqrt(ev(2)));
-%     trackstat.velocity(iduset)=trackstat.lennmstartend(iduset)/(exposuretime/1000*trackstat.lenframe(iduset)); %nm/s
-% 
-% end
 
+% link tracks
 track_singlechannel=ismember(locs.track_id,usetracks); %(locs.track_id>0, long);
 inchannel1=locs.channel==1;
 indr=find((track_singlechannel&inchannel1));
@@ -106,9 +59,7 @@ locr.y=locs.ynm(indr);
 locr.frame=locs.frame(indr);
 locr.track_id=locs.track_id(indr);
 
-
 inchannel2=locs.channel==2;
-% sum(inchannel2)
 indt=find((track_singlechannel&inchannel2));
 loct.x=locs.xnm(indt);
 loct.y=locs.ynm(indt);
@@ -120,122 +71,131 @@ loct.track_id=locs.track_id(indt);
 trackstat.partnertrackid(locs.track_id(indr(iAa)))=(locs.track_id(indt(iBa)));
 trackstat.partnertrackid(locs.track_id(indt(iBa)))=(locs.track_id(indr(iAa)));
 
-figure(999)
-idp=ismember(locs.track_id,unique(trackstat.partnertrackid(trackstat.partnertrackid>0)));
-plot(locs.xnm(idp&inchannel1),locs.ynm(idp&inchannel1),'r.',locs.xnm(idp&inchannel2),locs.ynm(idp&inchannel2),'b.')
+% idp=ismember(locs.track_id,unique(trackstat.partnertrackid(trackstat.partnertrackid>0)));
+% plot(locs.xnm(idp&inchannel1),locs.ynm(idp&inchannel1),'r.',locs.xnm(idp&inchannel2),locs.ynm(idp&inchannel2),'b.')
 
 partner=zeros(size(locs.xnm));
 partner(indr(iAa))=indt(iBa);
 partner(indt(iBa))=indr(iAa);
 
-% usetracks=unique(locs.track_id(intrack&longtracks));
 
-
-
-
-%look for processive movement
-% validstats=true(size(trackstat.velocity));
-% validstats = validstats & trackstat.stdshort./trackstat.stdlong<aspectratio;
-% validstats = validstats & trackstat.lennmstartend > lennmstartend;
-% validstats = validstats & trackstat.stdlong > lennmmin;
-% validstats = validstats & trackstat.velocity > minvelocity;
-% validstats = validstats & trackstat.velocity < maxvelocity;
-% 
-% trackstat.processive=validstats;
-
-comovement=false(size(trackstat.velocity));
-processivepartner=false(size(trackstat.velocity));
+haspartner=false(size(trackstat.velocity));
+% processivepartner=false(size(trackstat.velocity));
 trackstat.channel=zeros(size(trackstat.velocity));
-
-
+cotracklen=zeros(size(trackstat.velocity));
+dx0=zeros(size(trackstat.velocity))+inf;
+rmse=zeros(size(trackstat.velocity))+inf;
+dangle=zeros(size(trackstat.velocity))+2*pi;
+bothprocessive=false(size(trackstat.velocity));
+%
+%I should do this only for channel 1, right?
 for k=1:length(usetracks)  
-    idh=usetracks(k);
-    indtr=locs.track_id==idh;
-
+    idref=usetracks(k);
+    indref=find(locs.track_id==idref);
+    trackstat.channel(idref)=mode(locs.channel(indref));
+    if ~trackstat.processive(idref)
+            continue
+    end
+    
     %look at co-movement
-    % pid=0;
-    comovement(idh)=trackstat.partnertrackid(idh)>0;
-    if comovement(idh) %&& validstats
-        partnerind=partner(indtr);
-        partnerids=locs.track_id(partnerind(partnerind>0));
-        [pid,npart]=mode(partnerids);
-        trackstat.partnerids(idh)=pid;
-        
-        lenpartner=sum(locs.track_id==pid);
-        minduallength=min(sum(indtr),lenpartner);
-
-        comovement(idh)=comovement(idh) & npart>cotracklength;
-        comovement(idh)=comovement(idh) & npart/minduallength>cotrackfraction;
+    haspartner(idref)=trackstat.partnertrackid(idref)>0;
+    if haspartner(idref)  %&& validstats
+        indpartner=partner(indref);indpartner=indpartner(indpartner>0);
+        partnerids=locs.track_id(indpartner);
+        [idpartner,npart]=mode(partnerids);
+        trackstat.partnerids(idref)=idpartner;
+        if ~trackstat.processive(idpartner)
+            continue
+        end
+        bothprocessive(idref)=true;
+        cotracklen(idref)=npart;
         % here look at fits and compare:
         % 1. angles need to be similar
-        % 2. average distance between line should be below locprec.
-        
-        processivepartner(idh)=trackstat.processive(pid);
+        dangle(idref)=mod(trackstat.angle(idref)-trackstat.angle(idpartner)+pi,2*pi)-pi;
+        % 2. average distance between line: did not work, use x0
+        [fboth, i1,i2]=intersect(locs.frame(indref),locs.frame(indpartner));
+        l1x=trackstat.x0(idref);
+        l1y=trackstat.y0(idref);
+        l2x=trackstat.x0(idpartner);
+        l2y=trackstat.y0(idpartner);  
+        dx0(idref)=sqrt(sum((l1x-l2x).^2+(l1y-l2y).^2));
+        % 3. raw data: calculate dx(t), dy(t), average distance      
+        rmse(idref)=sqrt(mean((locs.xnm(indref(i1))-locs.xnm(indpartner(i2))).^2+(locs.ynm(indref(i1))-locs.ynm(indpartner(i2))).^2));
     end
-    trackstat.channel(idh)=mode(locs.channel(indtr));
-    
 end
-
+comovement=bothprocessive & abs(dangle)<p.dangle/180*pi & dx0<p.dx0 & rmse < p.rmsedat & cotracklen > p.cotracklength;
 trackstat.comovement=comovement;
-trackstat.processivepartner=processivepartner;
-
+trackstat.processivepartner=bothprocessive; %counts each 
 
 % plot tracks
-
 ax=obj.initaxis('xy');
 
-cols=[1 0 1
-      0 1 1
-      1 0 0 
-      0 0 1
-      .5 0.2 0.2
-      0.2 0.2 .5
-      .7 0 0.7
-      0 0.7 .7];
+% cols=[1 0 1
+%       0 1 1
+%       1 0 0 
+%       0 0 1
+%       .5 0.2 0.2
+%       0.2 0.2 .5];
 
-colind=trackstat.channel+trackstat.comovement*2+(~trackstat.processive)*4;   
+% colind=trackstat.channel+trackstat.processive*2+trackstat.comovement*2;  
 
 for k=1:length(usetracks)  
-    idh=usetracks(k);
-    indtr=locs.track_id==idh;
-    
-    msize=3;
-    lw=1;
-    symb='-';
+    idref=usetracks(k);
+    indref=locs.track_id==idref;  
+    % msize=3;
+    % lw=1;
+    % symb='-';
+    % if trackstat.comovement(idref)
+    %     if trackstat.channel(idref)==2
+    %             symb='x-';
+    %             msize=3;
+    %     else
+    %             symb='+-';
+    %             msize=7;
+    %             lw=2;            
+    %     end
+    % end
 
-    if trackstat.comovement(idh)
-        if trackstat.channel(idh)==2
-                symb='x-';
-                msize=3;
-        else
-                symb='+-';
-                msize=7;
-                lw=2;            
+    if trackstat.comovement(idref) %|| trackstat.processive(idref)
+        if trackstat.channel(idref)==1
+            hp=plot(ax,locs.xnm(indref)/pixelsize(1)-roi(1),locs.ynm(indref)/pixelsize(2)-roi(2),'+-','Color',[1 0 0],'LineWidth',3,'Tag','test','MarkerSize',7);
+        elseif trackstat.channel(idref)==2
+            hp=plot(ax,locs.xnm(indref)/pixelsize(1)-roi(1),locs.ynm(indref)/pixelsize(2)-roi(2),'x-','Color',[0 0 1],'LineWidth',2,'Tag','test','MarkerSize',3);
         end
-    end
-    hp=plot(ax,locs.xnm(indtr)/pixelsize(1)-roi(1),locs.ynm(indtr)/pixelsize(2)-roi(2),symb,'Color',cols(colind(idh),:),'LineWidth',lw,'Tag','test','MarkerSize',msize);
-    hold(ax,"on")
-    if trackstat.comovement(idh) || trackstat.processive(idh)
-        pidlabel=0*locs.track_id(indtr)+trackstat.partnerids(idh);
-        dtRows = [dataTipTextRow("frame",double(locs.frame(indtr))),...
-        dataTipTextRow("ID",double(locs.track_id(indtr))),...
+        pidlabel=0*locs.track_id(indref)+trackstat.partnerids(idref);
+        dtRows = [dataTipTextRow("frame",double(locs.frame(indref))),...
+        dataTipTextRow("ID",double(locs.track_id(indref))),...
         dataTipTextRow("partnerID",double(pidlabel))];
         alldatatip=vertcat(hp.DataTipTemplate.DataTipRows,dtRows');
         %hp.DataTipTemplate.DataTipRows(end+1:end+3) = dtRows;   
         hp.DataTipTemplate.DataTipRows=alldatatip;
+    elseif trackstat.processive(idref)
+        if trackstat.channel(idref)==1
+            plot(ax,locs.xnm(indref)/pixelsize(1)-roi(1),locs.ynm(indref)/pixelsize(2)-roi(2),'-','Color',[1 0 0])
+        elseif trackstat.channel(idref)==2
+            plot(ax,locs.xnm(indref)/pixelsize(1)-roi(1),locs.ynm(indref)/pixelsize(2)-roi(2),'-','Color',[0 0 1])
+        end
+
+    else
+        if trackstat.channel(idref)==1
+            plot(ax,locs.xnm(indref)/pixelsize(1)-roi(1),locs.ynm(indref)/pixelsize(2)-roi(2),'-','Color',[1 0 1])
+        elseif trackstat.channel(idref)==2
+            plot(ax,locs.xnm(indref)/pixelsize(1)-roi(1),locs.ynm(indref)/pixelsize(2)-roi(2),'-','Color',[0 1 1])
+        end
     end
+    hold(ax,"on")
 end
 
 
     axis(ax,'ij');
     axis(ax,'equal');
- trackstat.coprocessive=(trackstat.channel==1 & trackstat.comovement & trackstat.processive & trackstat.processivepartner);
+ % trackstat.coprocessive=(trackstat.channel==1 & trackstat.comovement & trackstat.processive & trackstat.processivepartner);
 % Plot cotracks vs time
 %%
 %only both good
 if contains(p.showtraces.selection,'processive co-tracks')
    
-    goodpairs=find(trackstat.coprocessive);
+    goodpairs=find(trackstat.comovement & trackstat.channel==1);
     figure;
     % numrows=ceil(length(goodpairs)/5);
     f=0;
@@ -247,22 +207,28 @@ if contains(p.showtraces.selection,'processive co-tracks')
         subplot(5,6,2*k-1-f)
         hold off
         id1=locs.track_id==goodpairs(k);
-        pid=trackstat.partnerids(goodpairs(k));
-        id2=locs.track_id==pid;
+        idpartner=trackstat.partnerids(goodpairs(k));
+        id2=locs.track_id==idpartner;
         tmin=min(min(locs.frame(id1)),min(locs.frame(id2)));
         tmax=max(max(locs.frame(id1)),min(locs.frame(id2)));
 
         xc=mean(locs.xnm(id1));yc=mean(locs.ynm(id1)); %rotate around same center, ch1 is ref
+        angleh=trackstat.angle(goodpairs(k));
     
-        [x1,y1]=rotcoord(locs.xnm(id1)-xc,locs.ynm(id1)-yc,trackstat.angle(goodpairs(k)));
-        [x2,y2]=rotcoord(locs.xnm(id2)-xc,locs.ynm(id2)-yc,trackstat.angle(pid));
+        [x1,y1]=rotcoord(locs.xnm(id1)-xc,locs.ynm(id1)-yc,angleh);
+        if x1(end)<x1(1)
+            angleh=angleh+pi;
+            [x1,y1]=rotcoord(locs.xnm(id1)-xc,locs.ynm(id1)-yc,angleh);
+        end
+        [x2,y2]=rotcoord(locs.xnm(id2)-xc,locs.ynm(id2)-yc,angleh);
         plot(locs.frame(id1),x1,'.-',locs.frame(id2),x2,'.-')
         hold on
-        title(['frame: ' num2str(tmin) ':', num2str(tmax),', x: ' num2str(mean(locs.xpix(id1)),'%3.0f') ', y: ' num2str(mean(locs.ypix(id1)),'%3.0f')])  
+        title(['frame: ' num2str(tmin) ':', num2str(tmax),', x: ' num2str(xc,'%3.0f') ', y: ' num2str(yc,'%3.0f')])  
         xlabel('time(frame)')
         ylabel('xrot (nm)')
         subplot(5,6,2*k-f)
         plot(locs.xnm(id1)-xc,locs.ynm(id1)-yc,'.-',locs.xnm(id2)-xc,locs.ynm(id2)-yc,'.-')
+        title(['Id1: ' num2str(goodpairs(k)), ', Id2: ' num2str(idpartner,'%3.0f')]) 
         axis equal
         xlabel('x (nm)')
         ylabel('y (nm)')
@@ -275,25 +241,17 @@ end
 % extracts filename from file path:
     filePath = string(obj.getPar('lastSMLFile'));
     % Find all occurrences of the substring
-    slash_indices = strfind(filePath, '/');
-    % If the substring is found
-    if ~isempty(slash_indices)
-        % Get the last occurrence index
-        lastSlashIndex = slash_indices(end);
-        % Extract the substring after the last occurrence
-        fileName = extractAfter(filePath, lastSlashIndex);
-    else
-        fileName = filePath;
-    end
-
-% % old output:
-% disp(sprintf('ch1\tch2\tch1prog\tch2prog\tdualcol\tch12progr'));
-% output=(sprintf([num2str(sum(trackstat.channel==1)), '\t' num2str(sum(trackstat.channel==2)),...
-%     '\t' num2str(sum(trackstat.channel==1 & trackstat.processive)), ...
-%     '\t' num2str(sum(trackstat.channel==2 & trackstat.processive)), ...
-%     '\t' num2str(sum(trackstat.partnertrackid>0)/2), ...
-%     '\t' num2str(sum(trackstat.coprocessive))]));
-
+    % slash_indices = strfind(filePath, '/');
+    % % If the substring is found
+    % if ~isempty(slash_indices)
+    %     % Get the last occurrence index
+    %     lastSlashIndex = slash_indices(end);
+    %     % Extract the substring after the last occurrence
+    %     fileName = extractAfter(filePath, lastSlashIndex);
+    % else
+    %     fileName = filePath;
+    % end
+[path,fileName]=fileparts(filePath); 
 % new output:
 output=(table(fileName,... 
     sum(trackstat.channel==1), ...
@@ -301,7 +259,7 @@ output=(table(fileName,...
     sum(trackstat.channel==1 & trackstat.processive), ...
     sum(trackstat.channel==2 & trackstat.processive), ...
     sum(trackstat.partnertrackid>0)/2, ...
-    sum(trackstat.coprocessive),...
+    sum(trackstat.comovement & trackstat.channel==1),...
     'VariableNames', {'Filename','ch1', 'ch2', 'ch1_prog','ch2_prog', 'dual', 'dual_prog'}));
 
 disp(output)
@@ -417,12 +375,26 @@ pard.cotracklength.object=struct('String','4','Style','edit');
 pard.cotracklength.position=[3,2.5];
 pard.cotracklength.Width=.5;
 
-pard.cotrackfractiont.object=struct('String','co track fraction >','Style','text');
-pard.cotrackfractiont.position=[3,3];
-pard.cotrackfractiont.Width=1.5;
-pard.cotrackfraction.object=struct('String','0','Style','edit');
-pard.cotrackfraction.position=[3,4.5];
-pard.cotrackfraction.Width=.5;
+pard.danglet.object=struct('String','diff angle (°) <','Style','text');
+pard.danglet.position=[3,3];
+pard.danglet.Width=1.5;
+pard.dangle.object=struct('String','30','Style','edit');
+pard.dangle.position=[3,4.5];
+pard.dangle.Width=.5;
+
+pard.rmsedatt.object=struct('String','rmse data <','Style','text');
+pard.rmsedatt.position=[4,1];
+pard.rmsedatt.Width=1.5;
+pard.rmsedat.object=struct('String','200','Style','edit');
+pard.rmsedat.position=[4,2.5];
+pard.rmsedat.Width=.5;
+
+pard.dx0t.object=struct('String','d x0 fit <','Style','text');
+pard.dx0t.position=[4,3];
+pard.dx0t.Width=1.5;
+pard.dx0.object=struct('String','300','Style','edit');
+pard.dx0.position=[4,4.5];
+pard.dx0.Width=.5;
 
 
 

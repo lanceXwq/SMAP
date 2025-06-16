@@ -43,7 +43,7 @@ maxvelocity=p.velocitymax;
 %analyze everything displayed
 layers=find(obj.getPar('sr_layerson'));
 obj.locData.filter; %does this fix the bug?
-[locs,indin]=obj.locData.getloc({'xnm','ynm','znm','xpix','ypix','frame','track_id','track_length','layer','filenumber'},'layer',layers,'position','roi','grouping','ungrouped');
+[locs,indin]=obj.locData.getloc({'xnm','ynm','znm','xpix','ypix','frame','track_id','track_length','layer','filenumber','channel'},'layer',layers,'position','roi','grouping','ungrouped');
 if isempty(locs.track_id)
     error('please use the SimpleTracking plugin first')
 end
@@ -62,11 +62,12 @@ trackstat.stdlong=zeros(max(usetracks),1);
 trackstat.lenframe=zeros(max(usetracks),1);
 trackstat.velocity=zeros(max(usetracks),1);
 locs.track_length_new=zeros(size(locs.xnm));
-trackstat.processive=zeros(max(usetracks),1);
+trackstat.processive=false(max(usetracks),1);
 trackstat.runtime=zeros(max(usetracks),1);
 trackstat.runlength=zeros(max(usetracks),1);
 trackstat.x0=zeros(max(usetracks),1);
 trackstat.y0=zeros(max(usetracks),1);
+trackstat.channel=zeros(max(usetracks),1);
 
 for k=1:length(usetracks)
     iduset=usetracks(k);
@@ -89,6 +90,7 @@ for k=1:length(usetracks)
     trackstat.angle(iduset)=cart2pol(xa, ya);
     trackstat.stdshort(iduset)=real(sqrt(ev(1)));
     trackstat.stdlong(iduset)=real(sqrt(ev(2)));
+    trackstat.channel(iduset)=mode(locs.channel(tind));
 end
 intrack=(locs.track_id>0);
 longtracks=locs.track_length_new>minlenframes;
@@ -128,7 +130,7 @@ if contains(p.showtraces.selection,'processive')
     figure; 
     f=0;
 end
-v=zeros(length(processiveids),1);runlength=v; runtime=v; rmse=v; gof=v;
+v=zeros(length(processiveids),1);runlength=v; runtime=v; rmse=v; gof=v;channel=v;
 goodv=true(length(processiveids),1);
 plotind=1;
 for k=1:length(processiveids)
@@ -148,10 +150,12 @@ for k=1:length(processiveids)
     runlength(k)=statv.len;
     trackstat.runlength(processiveids(k))=runlength(k);
     runtime(k)=statv.numpoints;
+    channel(k)=trackstat.channel(processiveids(k));
     trackstat.runtime(processiveids(k))=runtime(k);
     trackstat.processive(processiveids(k))=goodv(k);
-    trackstat.x0=statv.x0;
-    trackstat.y0=statv.y0;
+    trackstat.x0(processiveids(k))=statv.x0;
+    trackstat.y0(processiveids(k))=statv.y0;
+    % trackstat.t0(processiveids(k))=tmin; %no, rather tmin
     ff='%2.0f';
     %plot good tracks
     if contains(p.showtraces.selection,'processive') && goodv(k)
@@ -213,7 +217,7 @@ output=(table(fileName,sum(trackstat.lenframe>=minlenframes), sum(goodv), mean(v
 disp(output)
 out.summarytable=output;
 
-outputtracks=(table(repmat(string(fileName),sum(goodv),1), processiveids(goodv),(v(goodv)), (runlength(goodv)), (runtime(goodv)),'VariableNames', {'Filename','ID','Velocity','runlength','runtime'}));
+outputtracks=(table(repmat(string(fileName),sum(goodv),1), processiveids(goodv),(v(goodv)), (runlength(goodv)), (runtime(goodv)), channel(goodv),'VariableNames', {'Filename','ID','Velocity','runlength','runtime','channel'}));
 writetable(outputtracks,tablename)
 out.trackstable=outputtracks;
 
@@ -243,7 +247,7 @@ pard.aspectratio.Width=.5;
 pard.lennmstartendt.object=struct('String','start-end (nm) >','Style','text');
 pard.lennmstartendt.position=[2,3.5];
 pard.lennmstartendt.Width=1.;
-pard.lennmstartend.object=struct('String','300','Style','edit');
+pard.lennmstartend.object=struct('String','200','Style','edit');
 pard.lennmstartend.position=[2,4.5];
 pard.lennmstartend.Width=.5;
 
@@ -251,7 +255,7 @@ pard.lennmstartend.Width=.5;
 pard.velocityt.object=struct('String','velocity (nm/s) min','Style','text');
 pard.velocityt.position=[4,1];
 pard.velocityt.Width=1.5;
-pard.velocitymin.object=struct('String','10','Style','edit');
+pard.velocitymin.object=struct('String','200','Style','edit');
 pard.velocitymin.position=[4,2.5];
 pard.velocitymin.Width=.5;
 pard.velocitymt.object=struct('String','max','Style','text');
@@ -265,13 +269,13 @@ pard.velocitymax.Width=.5;
 pard.goft.object=struct('String','Goodness of Fit rmse/diff(rmse) <','Style','text');
 pard.goft.position=[5,1];
 pard.goft.Width=2;
-pard.gofmax.object=struct('String','2.5','Style','edit');
+pard.gofmax.object=struct('String','3','Style','edit');
 pard.gofmax.position=[5,3];
 pard.gofmax.Width=.5;
 pard.rmset.object=struct('String','rmse (nm) <','Style','text');
 pard.rmset.position=[5,3.5];
 pard.rmset.Width=1.;
-pard.rmsemax.object=struct('String','50','Style','edit');
+pard.rmsemax.object=struct('String','100','Style','edit');
 pard.rmsemax.position=[5,4.5];
 pard.rmsemax.Width=.5;
 
