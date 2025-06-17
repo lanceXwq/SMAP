@@ -237,7 +237,7 @@ if contains(p.showtraces.selection,'processive co-tracks')
         ylabel('xrot (nm)')
         subplot(5,6,2*k-f)
         plot(locs.xnm(id1)-xc,locs.ynm(id1)-yc,'.-',locs.xnm(id2)-xc,locs.ynm(id2)-yc,'.-')
-        title(['d\alpha ' num2str(dangle(goodpairs(k))*180/pi,'%1.0f'), ', dx ', num2str(dx0(goodpairs(k)),'%3.0f'), ', rmse h', num2str(rmse(goodpairs(k)),'%3.0f')]) 
+        title(['d\alpha ' num2str(dangle(goodpairs(k))*180/pi,'%1.0f'), ', dx ', num2str(dx0(goodpairs(k)),'%3.0f'), ', rmse ', num2str(rmse(goodpairs(k)),'%3.0f')]) 
         axis equal
         xlabel('x (nm)')
         ylabel('y (nm)')
