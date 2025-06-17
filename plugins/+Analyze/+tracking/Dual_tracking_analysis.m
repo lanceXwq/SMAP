@@ -189,9 +189,18 @@ end
 
     axis(ax,'ij');
     axis(ax,'equal');
- % trackstat.coprocessive=(trackstat.channel==1 & trackstat.comovement & trackstat.processive & trackstat.processivepartner);
+
+
+axr=obj.initaxis('rmse');
+plot(axr,cotracklen(bothprocessive), rmse(bothprocessive),'bo',cotracklen(comovement), rmse(comovement),'r+')
+xlabel(axr,'co track length (frames)')
+ylabel(axr,'rmse dual color (nm)')
+
+axf=obj.initaxis('fit');
+plot(axf,dx0(bothprocessive), dangle(bothprocessive)*180/pi,'bo',dx0(comovement), dangle(comovement)*180/pi,'r+')
+xlabel(axf,'distance fit x0 (nm)')
+ylabel(axf,'distance fit angle (°)')
 % Plot cotracks vs time
-%%
 %only both good
 if contains(p.showtraces.selection,'processive co-tracks')
    
@@ -223,18 +232,21 @@ if contains(p.showtraces.selection,'processive co-tracks')
         [x2,y2]=rotcoord(locs.xnm(id2)-xc,locs.ynm(id2)-yc,angleh);
         plot(locs.frame(id1),x1,'.-',locs.frame(id2),x2,'.-')
         hold on
-        title(['frame: ' num2str(tmin) ':', num2str(tmax),', x: ' num2str(xc,'%3.0f') ', y: ' num2str(yc,'%3.0f')])  
+        title(['f ' num2str(tmin) ':', num2str(tmax),', x ' num2str(xc/1000,'%3.0f') ', y ' num2str(yc/1000,'%3.0f'),', ID ' num2str(goodpairs(k)), ',' num2str(idpartner,'%3.0f')])  
         xlabel('time(frame)')
         ylabel('xrot (nm)')
         subplot(5,6,2*k-f)
         plot(locs.xnm(id1)-xc,locs.ynm(id1)-yc,'.-',locs.xnm(id2)-xc,locs.ynm(id2)-yc,'.-')
-        title(['Id1: ' num2str(goodpairs(k)), ', Id2: ' num2str(idpartner,'%3.0f')]) 
+        title(['d\alpha ' num2str(dangle(goodpairs(k))*180/pi,'%1.0f'), ', dx ', num2str(dx0(goodpairs(k)),'%3.0f'), ', rmse h', num2str(rmse(goodpairs(k)),'%3.0f')]) 
         axis equal
         xlabel('x (nm)')
         ylabel('y (nm)')
 
     end
 end
+
+
+
 
 % Calculate statistics
 
