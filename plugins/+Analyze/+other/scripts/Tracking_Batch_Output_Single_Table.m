@@ -1,16 +1,18 @@
 if isfield(results, 'Single_tracking_analysis')
-    var = results.Single_tracking_analysis;
-else
-    if isfield(results, 'Dual_tracking_analysis')
-        var = results.Dual_tracking_analysis;
-    else
-        disp('Neither Single nor Dual tracking analysis field exists.');
-    end
+    stvar = results.Single_tracking_analysis;
+end
+if isfield(results, 'Dual_tracking_analysis')
+    dtvar = results.Dual_tracking_analysis;
 end
 
 track_summary=[];
 track_details=[];
-for k=1:length(var)
-    track_summary=vertcat(track_summary,var{k}.summary);
-    track_details=vertcat(track_details,var{k}.tracks);
+for k=1:length(stvar)
+    track_summary=vertcat(track_summary,stvar{k}.summarytable);
+    track_details=vertcat(track_details,stvar{k}.trackstable);
+end
+
+track_summary_dual=[];
+for k=1:length(dtvar)
+    track_summary_dual=vertcat(track_summary_dual,dtvar{k});
 end
