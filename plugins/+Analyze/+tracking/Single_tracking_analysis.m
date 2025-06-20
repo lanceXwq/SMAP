@@ -210,7 +210,7 @@ histogram(axv,gof)
 % extracts filename from file path:
 fnum=find(obj.getPar('sr_layerson'),1,'first');
 fl=obj.getPar('filelist_long').String;
-filePath=fl{fnum};
+filePath=string(fl{fnum});
 
 % filePath = string(obj.getPar('lastSMLFile'));
 tablename=strrep(filePath,'_sml.mat','_tracks.csv'); %if this does not work, replace fileslm by filePath
