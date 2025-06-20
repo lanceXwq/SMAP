@@ -327,6 +327,9 @@ if p.makemovie && ~isempty(p.tiffile)
     end
     il.close;
     [fp,fn,ext]=fileparts(p.tiffile);
+    if ~exist([fp filesep 'overlays'],"dir")
+        mkdir([fp filesep 'overlays']);
+    end
     fout=[fp filesep 'overlays' filesep 'combined_' fn ext];
     % fout=strrep(p.tiffile,'.ome.tif','_combined.tif');
     options.color=true;
