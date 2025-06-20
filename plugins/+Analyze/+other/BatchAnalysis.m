@@ -53,9 +53,12 @@ classdef BatchAnalysis<interfaces.DialogProcessor
             end
             for f=1:length(filelist)
                 disp("processing: "+filelist{k})
+                gsmap.setGuiParameters(allpars,true);
                 [path,file,ext]=fileparts(filelist{f});
                 gFile.loadbutton_callback( 0,0,0,[path filesep],[file ext]);
-                gsmap.setGuiParameters(allpars,true);
+                
+                
+                % initGuiAfterLoad(obj)
                 gFormat.resetview;
                 %re-evaluate if needed
 %                 if p.evalutesites

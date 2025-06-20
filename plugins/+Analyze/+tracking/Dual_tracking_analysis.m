@@ -250,7 +250,10 @@ end
 % Calculate statistics
 
 % extracts filename from file path:
-    filePath = string(obj.getPar('lastSMLFile'));
+    % filePath = string(obj.getPar('lastSMLFile'));
+fnum=find(obj.getPar('sr_layerson'),1,'first');
+fl=obj.getPar('filelist_long').String;
+filePath=fl{fnum};
     % Find all occurrences of the substring
     % slash_indices = strfind(filePath, '/');
     % % If the substring is found

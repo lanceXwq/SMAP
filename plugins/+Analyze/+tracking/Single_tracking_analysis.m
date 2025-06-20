@@ -208,11 +208,15 @@ axv=obj.initaxis('gof');
 histogram(axv,gof)
 
 % extracts filename from file path:
-filePath = string(obj.getPar('lastSMLFile'));
+fnum=find(obj.getPar('sr_layerson'),1,'first');
+fl=obj.getPar('filelist_long').String;
+filePath=fl{fnum};
+
+% filePath = string(obj.getPar('lastSMLFile'));
 tablename=strrep(filePath,'_sml.mat','_tracks.csv'); %if this does not work, replace fileslm by filePath
 [path,fileName]=fileparts(filePath); 
 
-output=(table(fileName,sum(trackstat.lenframe>=minlenframes), sum(goodv), mean(v(goodv)), mean(runlength(goodv)), mean(runtime(goodv)),'VariableNames', {'Filename','Total', 'processive','Velocity','runlength','runtime'}));
+output=(table(string(fileName),sum(trackstat.lenframe>=minlenframes), sum(goodv), mean(v(goodv)), mean(runlength(goodv)), mean(runtime(goodv)),'VariableNames', {'Filename','Total', 'processive','Velocity','runlength','runtime'}));
 
 disp(output)
 out.summarytable=output;
