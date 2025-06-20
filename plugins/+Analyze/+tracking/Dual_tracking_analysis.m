@@ -66,18 +66,17 @@ loct.y=locs.ynm(indt);
 loct.frame=locs.frame(indt);
 loct.track_id=locs.track_id(indt);
 
-[iAa,iBa,nA,nB,nseen]=matchlocsall(locr,loct,0,0,maxd);
-
-trackstat.partnertrackid(locs.track_id(indr(iAa)))=(locs.track_id(indt(iBa)));
-trackstat.partnertrackid(locs.track_id(indt(iBa)))=(locs.track_id(indr(iAa)));
-
-% idp=ismember(locs.track_id,unique(trackstat.partnertrackid(trackstat.partnertrackid>0)));
-% plot(locs.xnm(idp&inchannel1),locs.ynm(idp&inchannel1),'r.',locs.xnm(idp&inchannel2),locs.ynm(idp&inchannel2),'b.')
-
 partner=zeros(size(locs.xnm));
-partner(indr(iAa))=indt(iBa);
-partner(indt(iBa))=indr(iAa);
 
+if ~isempty(indt) && ~isempty(indr)
+    [iAa,iBa,nA,nB,nseen]=matchlocsall(locr,loct,0,0,maxd);
+    
+    trackstat.partnertrackid(locs.track_id(indr(iAa)))=(locs.track_id(indt(iBa)));
+    trackstat.partnertrackid(locs.track_id(indt(iBa)))=(locs.track_id(indr(iAa)));
+   
+    partner(indr(iAa))=indt(iBa);
+    partner(indt(iBa))=indr(iAa);
+end
 
 haspartner=false(size(trackstat.velocity));
 % processivepartner=false(size(trackstat.velocity));

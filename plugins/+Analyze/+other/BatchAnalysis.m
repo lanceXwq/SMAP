@@ -52,6 +52,7 @@ classdef BatchAnalysis<interfaces.DialogProcessor
                 mkdir([outp filesep outf filesep aplugins{a}]);
             end
             for f=1:length(filelist)
+                disp("processing: "+filelist{k})
                 [path,file,ext]=fileparts(filelist{f});
                 gFile.loadbutton_callback( 0,0,0,[path filesep],[file ext]);
                 gsmap.setGuiParameters(allpars,true);
