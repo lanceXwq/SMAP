@@ -159,7 +159,7 @@ for k=1:length(usetracks)
         if trackstat.channel(idref)==1
             hp=plot(ax,locs.xnm(indref)/pixelsize(1)-roi(1),locs.ynm(indref)/pixelsize(2)-roi(2),'+-','Color',[1 0 0],'LineWidth',3,'Tag','test','MarkerSize',7);
         elseif trackstat.channel(idref)==2
-            hp=plot(ax,locs.xnm(indref)/pixelsize(1)-roi(1),locs.ynm(indref)/pixelsize(2)-roi(2),'x-','Color',[0 0 1],'LineWidth',2,'Tag','test','MarkerSize',3);
+            hp=plot(ax,locs.xnm(indref)/pixelsize(1)-roi(1),locs.ynm(indref)/pixelsize(2)-roi(2),'+-','Color',[0 0 1],'LineWidth',2,'Tag','test','MarkerSize',3);
         end
         pidlabel=0*locs.track_id(indref)+trackstat.partnerids(idref);
         dtRows = [dataTipTextRow("frame",double(locs.frame(indref))),...
@@ -183,12 +183,15 @@ for k=1:length(usetracks)
         end
     end
     hold(ax,"on")
+
 end
 
 
-    axis(ax,'ij');
+    
     axis(ax,'equal');
-
+    xlim(ax,[0 roi(3)])
+    ylim(ax,[0 roi(4)/2])
+axis(ax,'ij');
 
 axr=obj.initaxis('rmse');
 plot(axr,cotracklen(bothprocessive), rmse(bothprocessive),'bo',cotracklen(comovement), rmse(comovement),'r+')
