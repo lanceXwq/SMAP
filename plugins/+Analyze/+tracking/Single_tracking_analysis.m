@@ -1,5 +1,9 @@
 classdef Single_tracking_analysis<interfaces.DialogProcessor
     %Links molecules in consecutive frames for SPT analysis
+    properties
+        xyaxis
+        tracks
+    end
     methods
         function obj=Single_tracking_analysis(varargin)        
             obj@interfaces.DialogProcessor(varargin{:}) ;
@@ -105,6 +109,7 @@ trackstat.filter=validstats;
 
 % plot tracks
 ax=obj.initaxis('xy');
+obj.xyaxis=ax;
 cols=[1 1 0
       0 1 1];
 colgood=[0 0 0];
@@ -118,10 +123,16 @@ for k=1:length(usetracks)
     idh=usetracks(k);
     indtr=locs.track_id==idh;
     hp=plot(ax,locs.xnm(indtr)/pixelsize(1)-roi(1),locs.ynm(indtr)/pixelsize(2)-roi(2),symb,'Color',cols(colind(idh),:),'LineWidth',lw,'Tag','test','MarkerSize',msize);
+    dtRows = [dataTipTextRow("frame",double(locs.frame(indtr))),...
+        dataTipTextRow("ID",double(locs.track_id(indtr)))];
+        alldatatip=vertcat(hp.DataTipTemplate.DataTipRows,dtRows');   
+        hp.DataTipTemplate.DataTipRows=alldatatip;
     hold(ax,"on")
 end
-axis(ax,'ij');
 axis(ax,'equal');
+xlim(ax,[0 roi(3)])
+ylim(ax,[0 roi(4)/2])
+axis(ax,'ij');
 end
 
 % Analyze processivity
@@ -135,6 +146,7 @@ goodv=true(length(processiveids),1);
 plotind=1;
 for k=1:length(processiveids)
     idt=locs.track_id==processiveids(k);
+     % idt=locs.track_id==285;
     statv=analyse_processive_track(locs.xnm(idt),locs.ynm(idt),locs.frame(idt));
     tmin=(min(locs.frame(idt)));
     tmax=(max(locs.frame(idt)));
@@ -145,6 +157,7 @@ for k=1:length(processiveids)
     end
     
     v(k)=statv.v/exposuretimes;
+    statv.vnms=v(k);
     trackstat.velocity(processiveids(k))=v(k);
     rmse(k)=statv.rmse; gof(k)=statv.gof;
     runlength(k)=statv.len;
@@ -186,11 +199,15 @@ for k=1:length(processiveids)
         alldatatip=vertcat(hp.DataTipTemplate.DataTipRows,dtRows');   
         hp.DataTipTemplate.DataTipRows=alldatatip;
     end
+    statvall(processiveids(k))=statv;
 end
 % trackstat.processive=processiveids;
 out.tracks=trackstat;
 out.processive=trackstat.processive;
 out.trackids=usetracks;
+obj.tracks.trackstat=trackstat;
+obj.tracks.analysis=statvall;
+
 
 axv=obj.initaxis('v');
 histogram(axv,v(goodv))
@@ -203,9 +220,16 @@ histogram(axrt,runtime(goodv))
 title(axrt,"length time frames, mean "+mean(runtime(goodv)) + ", median " + median(runtime(goodv)));
 
 axv=obj.initaxis('rmse');
-histogram(axv,rmse)
+hold(axv,'off')
+h1=histogram(axv,rmse); 
+hold(axv,'on');
+h2=histogram(axv,rmse(goodv));
+h1.BinWidth=20;h2.BinWidth=20;
 axv=obj.initaxis('gof');
-histogram(axv,gof)
+h1=histogram(axv,gof); 
+hold(axv,'on');
+h2=histogram(axv,gof(goodv));
+h1.BinWidth=.2;h2.BinWidth=.2;
 
 % extracts filename from file path:
 fnum=find(obj.getPar('sr_layerson'),1,'first');
@@ -224,6 +248,33 @@ out.summarytable=output;
 outputtracks=(table(repmat(string(fileName),sum(goodv),1), processiveids(goodv),(v(goodv)), (runlength(goodv)), (runtime(goodv)), channel(goodv),'VariableNames', {'Filename','ID','Velocity','runlength','runtime','channel'}));
 writetable(outputtracks,tablename)
 out.trackstable=outputtracks;
+
+end
+
+function plotcurrent_callback(a,b,obj)
+f=obj.xyaxis.Parent.Parent.Parent;
+dcm=datacursormode(f);
+c=getCursorInfo(dcm);
+if isempty(c)
+    disp('select a track with datacursor')
+    return
+end
+ID=c.Target.DataTipTemplate.DataTipRows(end).Value(1);
+% x=c.Target.XData; y=c.Target.YData;
+% angle=obj.tracks.trackstat.angle(ID);
+% [xr,yr]=rotcoord(x-mean(x),y-mean(y),angle);
+
+fit=obj.tracks.analysis(ID);
+plt=fit.plot;
+figure(788)
+subplot(1,2,1);
+plot(plt.time,plt.xr,'b',fit.filtered.time,fit.filtered.xr,'b+',plt.time,plt.xfitr,'r')
+
+title("v " + num2str(fit.vnms,'%2.0f')+ ", len " + num2str(fit.numpoints))
+subplot(1,2,2);
+plot(plt.xr,plt.yr,'b',fit.filtered.xr,fit.filtered.yr,'b+',plt.xfitr,plt.yfitr,'r')
+axis equal
+title("gof " + num2str(fit.gof,'%2.1f')+ ", rmse " + num2str(fit.rmse,'%2.0f'))
 
 end
              
@@ -273,7 +324,7 @@ pard.velocitymax.Width=.5;
 pard.goft.object=struct('String','Goodness of Fit rmse/diff(rmse) <','Style','text');
 pard.goft.position=[5,1];
 pard.goft.Width=2;
-pard.gofmax.object=struct('String','3','Style','edit');
+pard.gofmax.object=struct('String','5','Style','edit');
 pard.gofmax.position=[5,3];
 pard.gofmax.Width=.5;
 pard.rmset.object=struct('String','rmse (nm) <','Style','text');
@@ -292,7 +343,11 @@ pard.showtraces.Width=1.5;
 
 pard.plottracks.object=struct('String','plot tracks','Style','checkbox','Value',1);
 pard.plottracks.position=[7,3];
-pard.plottracks.Width=1.5;
+pard.plottracks.Width=1;
+
+pard.plotcurrent.object=struct('String','plot selected','Style','pushbutton','Callback',{{@plotcurrent_callback,obj}});
+pard.plotcurrent.position=[7,4];
+pard.plotcurrent.Width=1;
 
 pard.plugininfo.description=sprintf('co-tracking analysis');
 pard.plugininfo.type='ProcessorPlugin';
