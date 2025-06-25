@@ -65,6 +65,13 @@ if nargin>4 %filter transmitted
 else
     indfilter=true(1,length(locs.xnm));
 end
+
+if sum(indfilter)==0 % no localizations
+        obj.locData.setloc('track_id',zeros(size(obj.locData.loc.xnm)));
+    return
+end
+
+
 if ~isempty(locs.znm)
     xyzt=horzcat(locs.xnm(indfilter),locs.ynm(indfilter),locs.znm(indfilter),locs.frame(indfilter));
     p.dim=3;
