@@ -259,7 +259,7 @@ if isempty(c)
     disp('select a track with datacursor')
     return
 end
-ID=c.Target.DataTipTemplate.DataTipRows(end).Value(1);
+ID=c(1).Target.DataTipTemplate.DataTipRows(end).Value(1);
 % x=c.Target.XData; y=c.Target.YData;
 % angle=obj.tracks.trackstat.angle(ID);
 % [xr,yr]=rotcoord(x-mean(x),y-mean(y),angle);
