@@ -246,22 +246,22 @@ if isequal(results.plotType,'image')
             cenX = X-XMean;
             cenY = Y-YMean;
             
-            
+            valNew=0*img;
             if obj.model{k}.dimension == 3
                 % for 3D
                 [cenX, cenY, cenZ] = rotcoord3(cenX(:),cenY(:),cenZ(:),deg2rad(xrot),deg2rad(yrot),deg2rad(zrot),'XYZ');
-                valNew = F(cenX+XMean-(xPos)./pixelSize, cenY+YMean-(yPos)./pixelSize, cenZ+ZMean-(zPos)./pixelSize);
+                valNew(:) = F(cenX+XMean-(xPos)./pixelSize, cenY+YMean-(yPos)./pixelSize, cenZ+ZMean-(zPos)./pixelSize);
                 ind = sub2ind(imgSize, X(:),Y(:),Z(:));
             else
                 % for 2D
                 [cenX, cenY] = rotcoord(cenX(:),cenY(:),-zrot*pi/180);
-                valNew = F(cenX+XMean-(xPos)./pixelSize + results.shift(2)/pixelSize , cenY+YMean-(yPos)./pixelSize+results.shift(1)/pixelSize);
+                valNew(:) = F(cenX+XMean-(xPos)./pixelSize + results.shift(2)/pixelSize , cenY+YMean-(yPos)./pixelSize+results.shift(1)/pixelSize);
                 ind = sub2ind(imgSize, X(:),Y(:));
             end
             
             if obj.model{k}.dimension == 3 && obj.dataDim == 2
                 artBoard_oneModel(ind) = valNew;
-                valNew = sum(artBoard_oneModel, 3);
+                valNew(:) = sum(artBoard_oneModel, 3);
             else
                 valNew(ind) = valNew;
             end
