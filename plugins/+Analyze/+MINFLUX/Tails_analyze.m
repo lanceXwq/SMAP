@@ -62,8 +62,12 @@ taillen=zeros(length(tidgood),1);taillocs=zeros(length(tidgood),1);
 
 locs=obj.locData.getloc({'xnm','ynm','time','tid','ecc','eco','filenumber'},'layer',layers,'Position','all','grouping','ungrouped');
 tidfn=locs.tid+maxtid*double(locs.filenumber);
-locsall=obj.locData.getloc({'tid','ecc','eco','time','filenumber'},'Position','all','grouping','ungrouped');
+locsall=obj.locData.getloc({'xnm','ynm','tid','ecc','eco','time','filenumber'},'Position','all','grouping','ungrouped');
 tidfnall=locsall.tid+maxtid*double(locsall.filenumber);
+
+if contains(p.source.selection, 'ROI')
+locs=locsall; tidfn=tidfnall;
+end
 for k=1:length(tidgood)
     ind=find(tidfn==tidgood(k));
 

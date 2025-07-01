@@ -88,6 +88,7 @@ classdef Cluster_MINFLUX_Roi<interfaces.SEEvaluationProcessor
             tzero=ltime*0;
 
             axy=obj.setoutput('xy');
+            axy.Parent.Parent.Parent.Renderer='painters';
             plot(axy,dxplot,dyplot,'c')
             hold(axy,'on')
             plot(axy,dxplot,dyplot,'k.')
@@ -95,6 +96,7 @@ classdef Cluster_MINFLUX_Roi<interfaces.SEEvaluationProcessor
             xlabel(axy,'x (nm)')
             ylabel(axy,'y (nm)')
             axis(axy,'equal')
+            % xlim(axy,[-150 150]); ylim(axy,[-150 150]);
 
             axx=obj.setoutput('x');
             

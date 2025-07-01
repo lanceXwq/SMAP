@@ -62,7 +62,7 @@ switch ext
             if p.alliter
                  loc=minfluxmat2loc_alliter(jt);
             else
-                loc=minfluxmat2loc(jt,p.onlyvalid,~p.simple);
+                loc=minfluxmat2loc(jt,p.onlyvalid, false);
             end
         end
         
