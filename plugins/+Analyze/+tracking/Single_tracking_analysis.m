@@ -246,7 +246,7 @@ disp(output)
 out.summarytable=output;
 
 outputtracks=(table(repmat(string(fileName),sum(goodv),1), processiveids(goodv),(v(goodv)), (runlength(goodv)), (runtime(goodv)), channel(goodv),'VariableNames', {'Filename','ID','Velocity','runlength','runtime','channel'}));
-writetable(outputtracks,tablename)
+% writetable(outputtracks,tablename) % creates a CSV output for each input
 out.trackstable=outputtracks;
 
 end
