@@ -144,6 +144,7 @@ end
 v=zeros(length(processiveids),1);runlength=v; runtime=v; rmse=v; gof=v;channel=v;
 goodv=true(length(processiveids),1);
 plotind=1;
+statvall=[];
 for k=1:length(processiveids)
     idt=locs.track_id==processiveids(k);
      % idt=locs.track_id==285;
