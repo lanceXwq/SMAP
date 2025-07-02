@@ -144,7 +144,7 @@ end
 v=zeros(length(processiveids),1);runlength=v; runtime=v; rmse=v; gof=v;channel=v;
 goodv=true(length(processiveids),1);
 plotind=1;
-statvall=struct;
+% statvall=struct;
 for k=1:length(processiveids)
     idt=locs.track_id==processiveids(k);
      % idt=locs.track_id==285;
@@ -201,6 +201,9 @@ for k=1:length(processiveids)
         hp.DataTipTemplate.DataTipRows=alldatatip;
     end
     statvall(processiveids(k))=statv;
+end
+if ~exist('statvall','var')
+    statvall=[];
 end
 % trackstat.processive=processiveids;
 out.tracks=trackstat;
