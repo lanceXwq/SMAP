@@ -9,8 +9,8 @@ if isfield(results, 'Single_tracking_analysis')
 end
 if isfield(results, 'Dual_tracking_analysis')
     dtvar = results.Dual_tracking_analysis;
-    track_summary_dual=[];
+    dual_track_summary=[];
     for k=1:length(dtvar)
-        track_summary_dual=vertcat(track_summary_dual,dtvar{k});
+        dual_track_summary=vertcat(dual_track_summary,dtvar{k});
     end
 end
