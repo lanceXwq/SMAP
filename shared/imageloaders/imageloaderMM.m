@@ -62,9 +62,18 @@ classdef imageloaderMM<interfaces.imageloaderSMAP
             allmd=gethashtable(imgmetadata);
             alls=gethashtable(summarymetadata);
             try
-            comments=char(img.getDisplayAndComments.get('Comments'));
-            allmd(end+1,:)={'Comments direct',comments};
+            
+            txt=fileread([fileparts(obj.file) filesep 'comments.txt']);
+            cfile=jsondecode(txt);
+            ctxt=cfile.map.GeneralAnnotation.scalar.comments.scalar;
+            ctxt=strrep(ctxt, newline,'; ');
+            allmd(end+1,:)={'Comments direct',ctxt};
             catch
+                try
+                    comments=char(img.getDisplayAndComments.get('Comments'));
+                    allmd(end+1,:)={'Comments direct',comments};
+                catch 
+                end
             end
             %direct
             try
