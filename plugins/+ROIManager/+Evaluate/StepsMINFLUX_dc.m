@@ -42,7 +42,7 @@ classdef StepsMINFLUX_dc<interfaces.SEEvaluationProcessor
            end
 
            %identify all localizations in track
-           usefields={'xnm','ynm','groupindex','tid','time','znm', 'efo', 'cfr', 'eco', 'ecc', 'efc','filenumber','thi'};
+           usefields={'xnm','ynm','groupindex','tid','time','znm', 'efo', 'cfr', 'eco', 'ecc', 'efc','filenumber','thi','vld'};
            locs=obj.getLocs(usefields,'layer',find(obj.getPar('sr_layerson')),'size',obj.getPar('se_siteroi')/2,'removeFilter',{'time'});
            indch=locs.thi==0;
            if isempty(locs.xnm)
@@ -95,7 +95,7 @@ classdef StepsMINFLUX_dc<interfaces.SEEvaluationProcessor
                index1=obj.locsuse.(fid)==id & obj.locsuse.filenumber ==filenumberh;
                index2=obj.locsuse.(fid)==id2 & obj.locsuse.filenumber ==filenumberh;
            end
-           if p.onlyvld
+           if p.onlyvld && isfield(obj.locsuse,'vld')
                 index1=index1 & obj.locsuse.vld==1;
                 index2=index2 & obj.locsuse.vld==1;
            end           

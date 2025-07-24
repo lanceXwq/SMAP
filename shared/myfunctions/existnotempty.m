@@ -1,7 +1,11 @@
 function out=existnotempty(st,varargin)
 out=true;
+if isempty(st)
+    out=false;
+    return
+end
 for k=1:length(varargin)
-    if ~myisfield(st,varargin{k})
+    if isempty(st) || ~myisfield(st,varargin{k})
         out=false;
         return
     end

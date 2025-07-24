@@ -33,11 +33,9 @@ cotracklength=p.cotracklength; %minimum data poits associated between tracks
 cotrackfraction = p.cotrackfraction; %minimum fraction of localizations associated
 lennmstartend=p.lennmstartend; % minimum endpoint- startpoint
 layers=find(obj.getPar('sr_layerson'));
-[locs,indin]=obj.locData.getloc({'xnm','ynm','time','tid','filenumber','thi'},'layer',layers,'position','roi','grouping','ungrouped');
-fhh=mode(locs.filenumber);
-tids0=locs.tid(locs.thi==0 & locs.filenumber==fhh);
-numloc=histcounts(tids0,1:max(tids0)+1);
-id0=find(numloc>minlenlocs);
+[locs,indin]=obj.locData.getloc({'xnm','ynm','time','tid','filenumber','thi'},'layer',layers,'position','all','grouping','ungrouped','removefilter','filenumber');
+
+
 SE=obj.locData.SE;
 if isempty(SE.cells)
     cg=ROIManager.Segment.makeCellGrid;
@@ -47,32 +45,45 @@ if isempty(SE.cells)
     cg.run(p);
 end
 cellp=vertcat(SE.cells.pos);
-for k=1:length(id0)
-    idh=locs.tid==id0(k);
-    xh=locs.xnm(idh); yh=locs.ynm(idh);
-    time=locs.time(idh);
-    len=sqrt((xh(end)-xh(1)).^2+(yh(end)-yh(1)).^2);
-    if len<lennmstartend
-        continue
-    end
-    %find other color
-    ind1p=find(locs.time>=time(1) & locs.time<=time(end) & locs.thi==1);
-    if isempty(ind1p)
-        continue
-    end
-    id1=mode(locs.tid(ind1p));
-    numl1=sum(locs.tid==id1);
-    if numl1<cotracklength || numl1/length(xh)< cotrackfraction
-        continue
-    end
+for c=length(SE.cells):-1:1
+    cellfn(c,1)=SE.cells(c).info.filenumber;
+end
+% fhh=mode(locs.filenumber);
+fnums=unique(locs.filenumber);
+for ff=1:length(fnums)
+    fhh=fnums(ff);
 
-    currentsite=interfaces.SEsites;
-    currentsite.pos=[mean(xh), mean(yh), 0];     
-    [~,cind]=min(sum((currentsite.pos(1:2)-cellp).^2,2));
-    currentsite.info.cell=SE.cells(cind).ID;
-    currentsite.info.filenumber=fhh;
-    currentsite.annotation.comments=num2str(time([1 end])/1000);
-    SE.addSite(currentsite);
+    tids0=locs.tid(locs.thi==0 & locs.filenumber==fhh);
+    numloc=histcounts(tids0,1:max(tids0)+1);
+    id0=find(numloc>minlenlocs);
+    for k=1:length(id0)
+        idh=locs.tid==id0(k) & locs.filenumber==fhh;
+        xh=locs.xnm(idh); yh=locs.ynm(idh);
+        time=locs.time(idh);
+        len=sqrt((xh(end)-xh(1)).^2+(yh(end)-yh(1)).^2);
+        if len<lennmstartend
+            continue
+        end
+        %find other color
+        ind1p=find(locs.time>=time(1) & locs.time<=time(end) & locs.thi==1 & locs.filenumber==fhh);
+        if isempty(ind1p)
+            continue
+        end
+        id1=mode(locs.tid(ind1p));
+        numl1=sum(locs.tid==id1);
+        if numl1<cotracklength || numl1/length(xh)< cotrackfraction
+            continue
+        end
+    
+        currentsite=interfaces.SEsites;
+        currentsite.pos=[mean(xh), mean(yh), 0];    
+        thisf=~(cellfn==fhh);
+        [~,cind]=min(sum((currentsite.pos(1:2)-cellp).^2,2)+thisf*1e9);
+        currentsite.info.cell=SE.cells(cind).ID;
+        currentsite.info.filenumber=fhh;
+        currentsite.annotation.comments=num2str(time([1 end])/1000);
+        SE.addSite(currentsite);
+    end
 end
 SE.processors.preview.updateSitelist;
 end
