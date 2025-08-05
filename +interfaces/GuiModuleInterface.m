@@ -289,7 +289,7 @@ classdef GuiModuleInterface<interfaces.GuiParameterInterface
                 setchildren=false;
             end
             if nargin<4
-                setmenulist=true;
+                setmenulist=false;
             end
             if isstruct(p)
                 fn=fieldnames(p);
