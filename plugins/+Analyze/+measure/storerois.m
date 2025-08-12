@@ -18,9 +18,12 @@ classdef storerois<interfaces.DialogProcessor
         function pushbutton(obj,a,b,action)
             switch a.String
                 case 'add'
+                    formathandle=obj.getPar('guiFormat');
                     roih=obj.getPar('sr_roihandle');
                     roisave.roimode=class(roih);
                     roisave.position=roih.getPosition;
+                    linewidth=formathandle.getSingleGuiParameter('linewidth_roi');
+                    roisave.linewidth=linewidth;
                     obj.rois{end+1}=roisave;
                     setroilist(obj)
                 case 'remove'
@@ -32,7 +35,10 @@ classdef storerois<interfaces.DialogProcessor
                     line=obj.guihandles.roilist.Value;
                     roih=obj.rois{line};
                     roih.isvalid=true;
-                    formathandle.roiset(roih);
+                    if strcmp(roih.roimode,'imline')
+                        formathandle.setGuiParameters(struct('linewidth_roi',roih.linewidth))
+                    end
+                    formathandle.roiset(roih); 
                 case 'save'
                     fn=obj.getPar('lastSMLFile');
                     fn=strrep(fn,'_sml.mat','_rois.mat');
