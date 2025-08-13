@@ -55,15 +55,28 @@ classdef storerois<interfaces.DialogProcessor
                         obj.rois=l.rois;
                         setroilist(obj);
                     end
+                case 'overview'
+                    f=obj.getPar('sr_figurehandle');
+                    f2=f.copy;hold on
+                    for k=1:length(obj.rois)
+                        roih=obj.rois{k};
+                        plot(roih.position(:,1),roih.position(:,2),'m','LineWidth',3)
+                        text(mean(roih.position(:,1)),mean(roih.position(:,2)),num2str(k),"BackgroundColor",[1,1,1])                
+                    end
+                    %  for k=1:length(obj.rois)
+                    %     text(mean(roih.position(:,1)),mean(roih.position(:,2)),num2str(k))                
+                    % end                  
+
             end
         end
     end
 end
 
 function setroilist(obj)
+ff='%2.1f';
 for k=1:length(obj.rois)
     pos=obj.rois{k}.position;
-    names{k}=k+ ". "+(obj.rois{k}.roimode)+ " " + string(round(pos(1)))+ "," + string(round(pos(2)));
+    names{k}=k+ ". "+(obj.rois{k}.roimode)+ " " + num2str(pos(1),ff)+ "," + num2str(pos(1),ff);
 end
 obj.guihandles.roilist.String=names;
 obj.guihandles.roilist.Value=k;
@@ -89,11 +102,14 @@ pard.save.Width=buttonwidth;
 pard.load.object=struct('String','load','Style','pushbutton','Callback',{{@obj.pushbutton,'load'}});
 pard.load.position=[5,1];
 pard.load.Width=buttonwidth;
+pard.ov.object=struct('String','overview','Style','pushbutton','Callback',{{@obj.pushbutton,'load'}});
+pard.ov.position=[6,1];
+pard.ov.Width=buttonwidth;
 
 pard.roilist.object=struct('String','','Style','listbox');
-pard.roilist.position=[5,buttonwidth+1];
-pard.roilist.Width=4-buttonwidth;
-pard.roilist.Height=5;
+pard.roilist.position=[6,buttonwidth+1];
+pard.roilist.Width=5-buttonwidth;
+pard.roilist.Height=6;
 
 pard.plugininfo.description=sprintf('stores and retrieves ROIs');
 pard.plugininfo.type='ProcessorPlugin';
