@@ -299,17 +299,17 @@ classdef GuiModuleInterface<interfaces.GuiParameterInterface
                     if isfield(h,fn{k})&&isprop(h.(fn{k}),'Style')&&~strcmp(h.(fn{k}).Style,'text')&&~any(ismember(obj.excludeFromSave,fn))                        
                         
                         hs=obj.value2handle(phere.(fn{k}),h.(fn{k}));                      
-%                         if (strcmp(h.(fn{k}).Style,'popupmenu'))
-%                             htmp.Value=hs.Value;
-%                             if (iscell(hs.String)&&hs.Value>length(hs.String)||(~iscell(hs.String)&&hs.Value>size(hs.String,1)))
-%                                 htmp.Value=1;
-%                             end
-%                             hs=htmp;                   
-%                         end
-                        if ~setmenulist && strcmp(h.(fn{k}).Style,'popupmenu')&&isprop(h.(fn{k}),'String')
-                            hs=myrmfield(hs,'String');
-                            hs.Value=min(hs.Value, length(h.(fn{k}).String));
+                        if (strcmp(h.(fn{k}).Style,'popupmenu'))
+                            % htmp.Value=hs.Value;
+                            if (iscell(hs.String)&&hs.Value>length(hs.String)||(~iscell(hs.String)&&hs.Value>size(hs.String,1)))
+                                hs.Value=1;
+                            end
+                            % hs=htmp;                   
                         end
+                        % if ~setmenulist && strcmp(h.(fn{k}).Style,'popupmenu')&&isprop(h.(fn{k}),'String')
+                        %     hs=myrmfield(hs,'String');
+                        %     hs.Value=min(hs.Value, length(h.(fn{k}).String));
+                        % end
                         h.(fn{k})=copyfields(h.(fn{k}),hs);
 %                     elseif strcmp(fn{k},'globaltable')
                     elseif isfield(h,fn{k}) && isa(h.(fn{k}),'matlab.ui.control.Table') %Table    
