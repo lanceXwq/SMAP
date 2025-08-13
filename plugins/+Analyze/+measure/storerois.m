@@ -63,7 +63,7 @@ end
 function setroilist(obj)
 for k=1:length(obj.rois)
     pos=obj.rois{k}.position;
-    names{k}=(obj.rois{k}.roimode)+ " " + string(round(pos(1)))+ "," + string(round(pos(2)));
+    names{k}=k+ ". "+(obj.rois{k}.roimode)+ " " + string(round(pos(1)))+ "," + string(round(pos(2)));
 end
 obj.guihandles.roilist.String=names;
 obj.guihandles.roilist.Value=k;
