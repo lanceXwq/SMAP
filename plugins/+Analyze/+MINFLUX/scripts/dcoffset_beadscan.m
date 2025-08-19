@@ -71,8 +71,8 @@ dxm=mean(distmapx(:),'omitnan');
 dym=mean(distmapy(:),'omitnan');
 sxm=std(distmapx(:),'omitnan');
 sym=std(distmapy(:),'omitnan');
-% distmapx=distmapx-dxm;distmapy=distmapy-dym; 
-distmapx(nx)=0;distmapy(nx)=0;
+distmapx=distmapx-dxm;distmapy=distmapy-dym; 
+% distmapx(nx)=0;distmapy(nx)=0;
 
 figure(91); hold off
 imagesc(horzcat(distmapx',distmapy'))
