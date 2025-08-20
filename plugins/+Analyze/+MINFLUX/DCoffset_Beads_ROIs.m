@@ -77,7 +77,7 @@ for k=1:length(sites)
     hold(p.axx,"on")
     hold(p.axy,"on")
 
-    xm(k)=mean(dx); ym(k)=mean(dx);
+    xm(k)=mean(dx); ym(k)=mean(dy);
     stx(k)=std(dx);sty(k)=std(dy);
    
 end
