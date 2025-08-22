@@ -58,8 +58,10 @@ for k=1:length(sites)
     id2=findch2(locs, ind1, followch);
     ind2=locs.tid==id2;
 
+    timef=fixtime(locs.time);
+
     x1h=locs.xnm(ind1)-subx;x2h=locs.xnm(ind2);y1h=locs.ynm(ind1)-suby;y2h=locs.ynm(ind2);
-    t1h=locs.time(ind1);t2h=locs.time(ind2);
+    t1h=timef(ind1);t2h=timef(ind2);
 
     dx=distancedc(t1h, x1h, t2h, x2h);
     dy=distancedc(t1h, y1h, t2h, y2h);
@@ -367,6 +369,14 @@ function id2=findch2(locs, ind1, followch, maxd, offset)
 tm=min(locs.time(ind1)); tx=max(locs.time(ind1));
 id2=mode(locs.tid(locs.time > tm & locs.time < tx & locs.thi==followch));
 end
+
+function tout=fixtime(tin)
+ib=find(diff(tin)<0);
+tout=tin;
+tout(ib)=(tin(ib-1)+tin(ib+1))/2;
+
+end
+
 
 function pard=guidef(obj)
 pard.modet.object=struct('String','analysis mode','Style','text');
