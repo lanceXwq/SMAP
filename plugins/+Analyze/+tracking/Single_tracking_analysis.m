@@ -208,6 +208,7 @@ end
 % trackstat.processive=processiveids;
 out.tracks=trackstat;
 out.processive=trackstat.processive;
+out.processiveids=processiveids;
 out.trackids=usetracks;
 obj.tracks.trackstat=trackstat;
 obj.tracks.analysis=statvall;

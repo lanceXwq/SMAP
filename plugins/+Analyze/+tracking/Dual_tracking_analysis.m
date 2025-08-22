@@ -280,7 +280,8 @@ output=(table(fileName,...
     'VariableNames', {'Filename','ch1', 'ch2', 'ch1_prog','ch2_prog', 'dual', 'dual_prog'}));
 
 disp(output)
-out=output;
+out.resultstable=output;
+out.trackstat=trackstat;
 % clipboard('copy',output)
 
 %%
@@ -425,37 +426,37 @@ pard.showtraces.object=struct('String',{{'none','processive co-tracks'}},'Style'
 pard.showtraces.position=[5,1.5];
 pard.showtraces.Width=1.5;
 
-pard.makemovie.object=struct('String','make movie','Style','checkbox');
-pard.makemovie.position=[6,1];
-pard.makemovie.Width=1.5;
-
-pard.addtracksmovie.object=struct('String','add tracks to movie','Style','checkbox');
-pard.addtracksmovie.position=[6,3];
-pard.addtracksmovie.Width=1.3;
-
-pard.tiffilet.object=struct('String','tif:','Style','text');
-pard.tiffilet.position=[7,1];
-pard.tiffilet.Width=0.5;
-
-pard.tiffile.object=struct('String','','Style','edit');
-pard.tiffile.position=[7,1.5];
-pard.tiffile.Width=3.;
-
-pard.tiffload.object=struct('String','load','Style','pushbutton','Callback',{{@obj.loadtiff,'tiffile','*.tif'}});
-pard.tiffload.position=[7,4.5];
-pard.tiffload.Width=0.5;
-
-pard.Tfilet.object=struct('String','trafo:','Style','text');
-pard.Tfilet.position=[8,1];
-pard.Tfilet.Width=0.5;
-
-pard.Tfile.object=struct('String','','Style','edit');
-pard.Tfile.position=[8,1.5];
-pard.Tfile.Width=3.;
-
-pard.Tfload.object=struct('String','load','Style','pushbutton','Callback',{{@obj.loadtiff,'Tfile','*.mat'}});
-pard.Tfload.position=[8,4.5];
-pard.Tfload.Width=0.5;
+% pard.makemovie.object=struct('String','make movie','Style','checkbox');
+% pard.makemovie.position=[6,1];
+% pard.makemovie.Width=1.5;
+% 
+% pard.addtracksmovie.object=struct('String','add tracks to movie','Style','checkbox');
+% pard.addtracksmovie.position=[6,3];
+% pard.addtracksmovie.Width=1.3;
+% 
+% pard.tiffilet.object=struct('String','tif:','Style','text');
+% pard.tiffilet.position=[7,1];
+% pard.tiffilet.Width=0.5;
+% 
+% pard.tiffile.object=struct('String','','Style','edit');
+% pard.tiffile.position=[7,1.5];
+% pard.tiffile.Width=3.;
+% 
+% pard.tiffload.object=struct('String','load','Style','pushbutton','Callback',{{@obj.loadtiff,'tiffile','*.tif'}});
+% pard.tiffload.position=[7,4.5];
+% pard.tiffload.Width=0.5;
+% 
+% pard.Tfilet.object=struct('String','trafo:','Style','text');
+% pard.Tfilet.position=[8,1];
+% pard.Tfilet.Width=0.5;
+% 
+% pard.Tfile.object=struct('String','','Style','edit');
+% pard.Tfile.position=[8,1.5];
+% pard.Tfile.Width=3.;
+% 
+% pard.Tfload.object=struct('String','load','Style','pushbutton','Callback',{{@obj.loadtiff,'Tfile','*.mat'}});
+% pard.Tfload.position=[8,4.5];
+% pard.Tfload.Width=0.5;
 
 
 pard.plugininfo.description=sprintf('co-tracking analysis');
