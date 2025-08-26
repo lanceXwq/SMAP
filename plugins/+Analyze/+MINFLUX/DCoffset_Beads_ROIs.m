@@ -371,9 +371,24 @@ id2=mode(locs.tid(locs.time > tm & locs.time < tx & locs.thi==followch));
 end
 
 function tout=fixtime(tin)
-ib=find(diff(tin)<0);
+diffti=diff(tin);
+difft=abs([0 ; diffti])+abs([diffti ;0]);
+dtmax=max(difft)/5;
+ib=find((difft)>dtmax);
 tout=tin;
-tout(ib)=(tin(ib-1)+tin(ib+1))/2;
+w=15;
+for k=1:length(ib)
+    dtest=diffti(max(1,ib(k)-w):min(ib(k)+w,length(tout)));
+    dtmean=mean(dtest(abs(dtest)<dtmax));
+    % if difft(ib(k))>0
+        % tout(ib(k))=tout(ib(k)-1)+dtmean;
+    % else
+        tout(ib(k)+1)=tout(ib(k))+dtmean;
+    % end
+   
+  
+end
+% tout(ib)=(tin(ib-1)+tin(ib+1))/2;
 
 end
 
