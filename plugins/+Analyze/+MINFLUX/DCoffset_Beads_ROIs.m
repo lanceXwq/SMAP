@@ -378,7 +378,7 @@ ib=find((difft)>dtmax);
 tout=tin;
 w=1d5;
 for k=1:length(ib)
-    dtest=diffti(max(1,ib(k)-w):min(ib(k)+w,length(tout)));
+    dtest=diffti(max(1,ib(k)-w):min(ib(k)+w,length(diffti)));
     dtmean=mean(dtest(abs(dtest)<dtmax));
     % if difft(ib(k))>0
         % tout(ib(k))=tout(ib(k)-1)+dtmean;
