@@ -171,6 +171,26 @@ for k=1:length(ids)
     end
 
 end
+ 
+if p.alternating
+    intch=mean(mean(imstack-mean(imstack(:)),1),2);
+    n1=1:2:size(imstack,4);
+    n2=2:2:size(imstack,4);
+    in1=sum(squeeze(intch(1,1,1,n1))/sum(intch(1,1,1,:))+squeeze(intch(1,1,2,n2))/sum(intch(1,1,2,:)));
+    in2=sum(squeeze(intch(1,1,1,n2))/sum(intch(1,1,1,:))+squeeze(intch(1,1,2,n1))/sum(intch(1,1,2,:)));
+    if in1>in2
+        indch1=n1; indch2=n2;
+    else
+        indch1=n2; indch2=n1;
+    end
+    imstacka=zeros(size(imstack,1),size(imstack,2),size(imstack,3),size(imstack,4)/2);
+    imstacka(:,:,1,:)=imstack(:,:,1,indch1);
+    imstacka(:,:,2,:)=imstack(:,:,2,indch2);
+    imstacka(:,:,dimmark,:)=(imstack(:,:,dimmark,indch1)+imstack(:,:,dimmark,indch2))/2;
+    imstack=imstacka;
+
+end
+
 [fp,fn,ext]=fileparts(p.tiffile);
 if ~exist([fp filesep 'overlays'],"dir")
     mkdir([fp filesep 'overlays']);
@@ -204,6 +224,10 @@ pard.addpartial.Width=1;
 pard.addtracks.object=struct('String','full tracks','Style','checkbox');
 pard.addtracks.position=[2,3];
 pard.addtracks.Width=1;
+
+pard.alternating.object=struct('String','alternating','Style','checkbox');
+pard.alternating.position=[2,4];
+pard.alternating.Width=1;
 
 pard.tiffilet.object=struct('String','tif:','Style','text');
 pard.tiffilet.position=[3,1];
