@@ -7,7 +7,8 @@ classdef FilterFields<interfaces.DialogProcessor
         
         function out=run(obj,p)
             out=[];
-            for k=1:p.layers
+            % p.layers
+            for k=1:length(p.layers)
                 sf={p.fieldselect,p.filterminmax(1),p.filterminmax(2),1,1};
                 obj.setPar('selectedField',sf,'layer',p.layers(k))
             end
