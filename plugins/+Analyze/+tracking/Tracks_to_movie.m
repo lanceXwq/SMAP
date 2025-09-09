@@ -132,7 +132,7 @@ switch p.showtraces.selection
     case 'processive'
         ids=singletracks.processiveids;
     case 'processive co-tracks'
-        ids=dualtracks.trackstat.comovement;      
+        ids=find(dualtracks.trackstat.comovement);      
     case 'none'
         ids=[];
 end
