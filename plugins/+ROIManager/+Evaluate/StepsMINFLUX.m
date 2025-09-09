@@ -569,7 +569,7 @@ sigmax=std(obj.coord.xr);sigmay=std(obj.coord.yr);
 sxdetrend=std(diff(obj.coord.xr))/sqrt(2);sydetrend=std(diff(obj.coord.yr))/sqrt(2);
 [~, sxrobust]=robustMean(obj.coord.xr); [~, syrobust]=robustMean(obj.coord.yr);
 title(axxy,['std(x) = ' num2str(sigmax,ff) ' nm, std(x) detrend = ' num2str(sxdetrend,ff) ' nm.' ' std(y) = ' num2str(sigmay,ff) ' nm, std(y) detrend = ' num2str(sydetrend,ff) ' nm.'])
-
+legend(axxy,['phtTotal: ' num2str(sum(obj.locData.loc.eco(obj.index))+sum(obj.locData.loc.ecc(obj.index)))], 'Location', 'northeast')
 
 
 if ~isempty(obj.coord.z)
