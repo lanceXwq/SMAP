@@ -149,7 +149,10 @@ immax=max(imstack(:));
 for k=1:length(ids)
     ind=locs.track_id==ids(k);
     x=round(locs.xnm(ind)/pixelsize(1)-roi(1)); y=round(locs.ynm(ind)/pixelsize(2)-roi(2)); frame=locs.frame(ind);
-    x=min(lenx-dx,x);x=max(dx+1,x);y=min(leny-dx,y);y=max(dx+1,y);
+    if ~p.addboxes
+        dx=0;
+    end
+        x=min(lenx-dx,x);x=max(dx+1,x);y=min(leny-dx,y);y=max(dx+1,y);
     for l=1:length(x)
 
         if p.addboxes
