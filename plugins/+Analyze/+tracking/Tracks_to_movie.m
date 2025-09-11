@@ -106,13 +106,34 @@ end
 
 il.close;
 
+
+layers=find(obj.getPar('sr_layerson'));
+[locs,indin]=obj.locData.getloc({'xnm','ynm','znm','xpix','ypix','frame','track_id','track_length','layer','filenumber','channel'},'layer',layers,'position','roi','grouping','ungrouped');
+
+
+imstack=imcomb;
+if p.alternating
+    intch=mean(mean(imstack-mean(imstack(:)),1),2);
+    n1=1:2:size(imstack,4);
+    n2=2:2:size(imstack,4);
+    in1=sum(squeeze(intch(1,1,1,n1))/sum(intch(1,1,1,:))+squeeze(intch(1,1,2,n2))/sum(intch(1,1,2,:)));
+    in2=sum(squeeze(intch(1,1,1,n2))/sum(intch(1,1,1,:))+squeeze(intch(1,1,2,n1))/sum(intch(1,1,2,:)));
+    if in1>in2
+        indch1=n1; indch2=n2;
+    else
+        indch1=n2; indch2=n1;
+    end
+    imstacka=zeros(size(imstack,1),size(imstack,2),size(imstack,3),size(imstack,4)/2);
+    imstacka(:,:,1,:)=imstack(:,:,1,indch1);
+    imstacka(:,:,2,:)=imstack(:,:,2,indch2);
+    imstacka(:,:,dimmark,:)=(imstack(:,:,dimmark,indch1)+imstack(:,:,dimmark,indch2))/2;
+    imstack=imstacka;
+end
+
 % fout=[fp filesep 'overlays' filesep 'combined_' fn ext];
 % % fout=strrep(p.tiffile,'.ome.tif','_combined.tif');
 % options.color=true;
 % saveastiff(squeeze(single(imcomb)),fout,options);
-
-layers=find(obj.getPar('sr_layerson'));
-[locs,indin]=obj.locData.getloc({'xnm','ynm','znm','xpix','ypix','frame','track_id','track_length','layer','filenumber','channel'},'layer',layers,'position','roi','grouping','ungrouped');
 
 
 % % if ~isempty(dualtracks)
@@ -142,7 +163,7 @@ exposuretime=obj.locData.files.file(locs.filenumber(1)).info.exposure;
 roi=obj.locData.files.file(locs.filenumber(1)).info.roi;
 pixelsize=obj.locData.files.file(locs.filenumber(1)).info.cam_pixelsize_um*1000;
 
-imstack=imcomb;
+% imstack=imcomb;
 immax=max(imstack(:));
 [lenx,leny]=size(imstack,[1,2]);
 
@@ -175,24 +196,7 @@ for k=1:length(ids)
 
 end
  
-if p.alternating
-    intch=mean(mean(imstack-mean(imstack(:)),1),2);
-    n1=1:2:size(imstack,4);
-    n2=2:2:size(imstack,4);
-    in1=sum(squeeze(intch(1,1,1,n1))/sum(intch(1,1,1,:))+squeeze(intch(1,1,2,n2))/sum(intch(1,1,2,:)));
-    in2=sum(squeeze(intch(1,1,1,n2))/sum(intch(1,1,1,:))+squeeze(intch(1,1,2,n1))/sum(intch(1,1,2,:)));
-    if in1>in2
-        indch1=n1; indch2=n2;
-    else
-        indch1=n2; indch2=n1;
-    end
-    imstacka=zeros(size(imstack,1),size(imstack,2),size(imstack,3),size(imstack,4)/2);
-    imstacka(:,:,1,:)=imstack(:,:,1,indch1);
-    imstacka(:,:,2,:)=imstack(:,:,2,indch2);
-    imstacka(:,:,dimmark,:)=(imstack(:,:,dimmark,indch1)+imstack(:,:,dimmark,indch2))/2;
-    imstack=imstacka;
 
-end
 
 [fp,fn,ext]=fileparts(p.tiffile);
 if ~exist([fp filesep 'overlays'],"dir")
