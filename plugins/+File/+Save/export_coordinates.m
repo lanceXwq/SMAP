@@ -41,8 +41,9 @@ classdef export_coordinates<interfaces.DialogProcessor
                     for k=1:p.numberOfLayers
                         if p.sr_layerson(k)
                             locs=obj.locData.getloc(obj.exportfields,'layer',k,'position','roi');
-                            
-                            locs.layer=k*ones(size(locs.(obj.exportfields{1})));
+                            if sum(obj.getPar('sr_layerson'))>1
+                                locs.layer=k*ones(size(locs.(obj.exportfields{1})));
+                            end
                             ltab=struct2table(locs);
                             taball=vertcat(taball,ltab);
                         end

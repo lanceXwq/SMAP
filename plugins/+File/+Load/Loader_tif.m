@@ -53,6 +53,10 @@ pard.mirrortif.position=[1,3];
 pard.mirrortif.Width=2;
 pard.mirrortif.TooltipString='Mirror image. Might be required if EM gain was used';
 
+pard.autocontrast.object=struct('Style','checkbox','String','auto contrast');
+pard.autocontrast.position=[2,1];
+pard.autocontrast.Width=2;
+
 pard.plugininfo=info;
 pard.plugininfo.type='LoaderPlugin';
 pard.plugininfo.description='Loads diffrction-limited tiff images and associates them to an already loaded SMAP data set.';
@@ -91,11 +95,21 @@ if isfield(p,'mirrortif' ) && p.mirrortif
     end
 end
 numimages=length(images);
-tiffold=obj.locData.files.file(f).numberOfTif;
+if isfield(obj.locData.files.file(f),'numberOfTif')
+    tiffold=obj.locData.files.file(f).numberOfTif;
+else
+    tiffold=0;
+end
 obj.locData.files.file(f).numberOfTif=tiffold+numimages;
 % imout=gettif(file);
 for k=1:numimages
     images(k).info.cam_pixelsize_um=obj.locData.files.file(f).info.cam_pixelsize_um;
+end
+if p.autocontrast
+    image=double(images.image);
+    image=image-min(image);
+    image=image/max(image(:));
+    images.image=image;
 end
 
 obj.locData.files.file(f).tif(tiffold+1:obj.locData.files.file(f).numberOfTif)=images;
