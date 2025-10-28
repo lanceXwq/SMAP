@@ -36,7 +36,7 @@ classdef GuiModuleInterface<interfaces.GuiParameterInterface
             end
             
             %PC-Mac differences
-            if ispc
+            if ispc 
                  guiPar.fontsize=10;
                  guiPar.FieldHeight=26;
                  guiPar.tabsize1=[0    -1  546 342];
@@ -44,6 +44,14 @@ classdef GuiModuleInterface<interfaces.GuiParameterInterface
                  guiPar.Vsep=3;
                  guiPar.Xrim=3;
                  guiPar.Vrim=2;              
+            elseif ismac && year(version('-date'))>2024
+                 guiPar.fontsize=11;
+                 guiPar.FieldHeight=26;
+                 guiPar.tabsize1=[1    4  546 336];
+                 guiPar.tabsize2=[3    4  544 324];    
+                 guiPar.Vsep=3;
+                 guiPar.Xrim=3;
+                 guiPar.Vrim=2; 
             elseif ismac
                  guiPar.fontsize=15;
                  guiPar.FieldHeight=25;
@@ -455,12 +463,13 @@ classdef GuiModuleInterface<interfaces.GuiParameterInterface
         
         function  adjusttabgroup(obj,htg)
             %adjusts width of second tabgroup on mac
-            if ispc
+            if ispc 
+
             else
                 htg.Units='pixel';
                 htg.Position(1)=htg.Position(1)-8;
                 htg.Position(3)=htg.Position(3)+16;
-                htg.Position(2)=htg.Position(2)-12;
+                htg.Position(2)=htg.Position(2)-12-4;
                 htg.Position(4)=htg.Position(4)+16;
                 htg.Units='normalized';
             end
