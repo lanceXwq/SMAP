@@ -2,9 +2,9 @@
 % we expect constant dt, so low photon threshold
 % parameters
 minlen=5000; %minimum number of localizations in track
-maxfreqb=1500;
+maxfreq=350;
 skipfirst=5;
-dfreq=0.2;
+dfreq=0.1;
 
 usefields={'xnm','ynm','znm','time','groupindex','numberInGroup','filenumber','efo','cfr','eco','ecc','efc','tid','fbg','phot'};
 locs=g.locData.getloc(usefields,'layer',find(g.getPar('sr_layerson')),'Position','all','removeFilter',{'filenumber','time'});
@@ -15,23 +15,26 @@ trackids=unique(tidf(indlong));
 figure(88); clf
 ax1=subplot(2,1,1);
 ax2=subplot(2,1,2);
-fall=0:dfreq:500;
+% dfreq=1/min(diff(locs.time(indlong)))
+fall=0:dfreq:maxfreq;
 ftxa=0;ftya=0;
+
 
 for k=1:length(trackids)
     ig=tidf==trackids(k);
     igf=find(ig);
     [yfp,freq]=getfft(locs.ynm(igf(skipfirst:end)),locs.time(igf(skipfirst:end)));
+    
     yfpbh=bindata(freq,yfp,fall);
     plot(ax2,fall,yfpbh,'c'); hold(ax1,'on') 
-    % yfpbh(isnan(yfpbh))=0;
+    yfpbh(isnan(yfpbh))=0;
     ftya=yfpbh*sum(ig)+ftya;
     % end
 
     [xfp,freq]=getfft(locs.xnm(igf(skipfirst:end)),locs.time(igf(skipfirst:end)));
     xfpbh=bindata(freq,xfp,fall);
     plot(ax1,fall,xfpbh,'c'); hold(ax2,'on') 
-    % xfpbh(isnan(xfpbh))=0;
+    xfpbh(isnan(xfpbh))=0;
     ftxa=xfpbh*sum(ig)+ftxa; 
     % end
 end
