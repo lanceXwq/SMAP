@@ -5,6 +5,7 @@ p.minlen=5000; %minimum number of localizations in track
 p.maxfreq=350;
 p.skipfirst=5;
 p.dfreq=0.1;
+p.ymax=0.25;
 
 figure(88); clf
 ax1=subplot(2,1,1);
@@ -41,7 +42,7 @@ plot(ax,fall,ftxa,'k','LineWidth',2);
 xlabel(ax,'frequency (Hz)')
 ylabel(ax,'Amplitude (nm), 2*fft (x)');
 axis(ax,'tight')
-ax.YLim(2)=0.25;
+ax.YLim(2)=p.ymax;
 
 [pks,pkind]=findpeaks(ftxa,"MinPeakHeight",2*mean(ftxa),"MinPeakDistance",5);
 plot(fall(pkind),pks,'ro')
