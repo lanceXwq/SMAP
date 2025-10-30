@@ -6,6 +6,7 @@ p.maxfreq=350;
 p.skipfirst=5;
 p.dfreq=0.1;
 p.ymax=0.25;
+p.sensitivity=1.3; % peak detection mean(a)+ sensitivity*std(a)
 
 figure(88); clf
 ax1=subplot(2,1,1);
@@ -32,8 +33,11 @@ for k=1:length(trackids)
     igf=find(ig);
     [xfp,freq]=getfft(x(igf(p.skipfirst:end)),t(igf(p.skipfirst:end)));
     xfpbh=bindata(freq,xfp,fall);
+    
+    idnan=find(isnan(xfpbh));
+    xfpbh(idnan(end))=0; idnan(end)=[];
+    xfpbh(idnan)=xfpbh(idnan+1);
     plot(ax,fall,xfpbh,'c','LineWidth',0.1); hold(ax,'on') 
-    xfpbh(isnan(xfpbh))=0;
     ftxa=xfpbh*sum(ig)+ftxa; 
 end
 % ftxa=ftxa/length(trackids);
@@ -44,7 +48,7 @@ ylabel(ax,'Amplitude (nm), 2*fft (x)');
 axis(ax,'tight')
 ax.YLim(2)=p.ymax;
 
-[pks,pkind]=findpeaks(ftxa,"MinPeakHeight",2*mean(ftxa),"MinPeakDistance",5);
+[pks,pkind]=findpeaks(ftxa,"MinPeakHeight",mean(ftxa,'omitnan')+p.sensitivity*std(ftxa,'omitnan'),"MinPeakDistance",10);
 % plot(fall(pkind),pks,'ro')
 for k=1:length(pks)
     text(fall(pkind(k))+1,pks(k),string(fall(pkind(k))))
