@@ -18,7 +18,7 @@ if nargin<4
     ax=gca;
 end
 usefields={'xnm','ynm','znm','time','groupindex','numberInGroup','filenumber','efo','cfr','eco','ecc','efc','tid','fbg','phot'};
-locs=g.locData.getloc(usefields,'layer',find(g.getPar('sr_layerson')),'Position','all','removeFilter',{'filenumber','time'});
+locs=g.locData.getloc(usefields,'layer',find(g.getPar('sr_layerson')),'Position','all','removeFilter',{'filenumber','time'},'grouping','ungrouped');
 mtid=max(double(locs.tid));
 tidf=double(locs.tid)+double(locs.filenumber)*mtid;
 indlong=locs.numberInGroup>=p.minlen;
@@ -32,7 +32,7 @@ for k=1:length(trackids)
     igf=find(ig);
     [xfp,freq]=getfft(x(igf(p.skipfirst:end)),t(igf(p.skipfirst:end)));
     xfpbh=bindata(freq,xfp,fall);
-    plot(ax,fall,xfpbh,'c'); hold(ax,'on') 
+    plot(ax,fall,xfpbh,'c','LineWidth',0.1); hold(ax,'on') 
     xfpbh(isnan(xfpbh))=0;
     ftxa=xfpbh*sum(ig)+ftxa; 
 end
@@ -45,9 +45,9 @@ axis(ax,'tight')
 ax.YLim(2)=p.ymax;
 
 [pks,pkind]=findpeaks(ftxa,"MinPeakHeight",2*mean(ftxa),"MinPeakDistance",5);
-plot(fall(pkind),pks,'ro')
+% plot(fall(pkind),pks,'ro')
 for k=1:length(pks)
-    text(fall(pkind(k)),pks(k),string(fall(pkind(k))))
+    text(fall(pkind(k))+1,pks(k),string(fall(pkind(k))))
 end
 peaks=horzcat(fall(pkind)',pks');
 end
