@@ -7,7 +7,7 @@ skipfirst=5;
 dfreq=0.2;
 
 usefields={'xnm','ynm','znm','time','groupindex','numberInGroup','filenumber','efo','cfr','eco','ecc','efc','tid','fbg','phot'};
-locs=g.locData.getloc(usefields,'layer',find(g.getPar('sr_layerson')),'Position','roi','removeFilter',{'filenumber','time'});
+locs=g.locData.getloc(usefields,'layer',find(g.getPar('sr_layerson')),'Position','all','removeFilter',{'filenumber','time'});
 mtid=max(double(locs.tid));
 tidf=double(locs.tid)+double(locs.filenumber)*mtid;
 indlong=locs.numberInGroup>=minlen;
@@ -20,14 +20,15 @@ ftxa=0;ftya=0;
 
 for k=1:length(trackids)
     ig=tidf==trackids(k);
-    [yfp,freq]=getfft(locs.ynm(ig),locs.time(ig));
+    igf=find(ig);
+    [yfp,freq]=getfft(locs.ynm(igf(skipfirst:end)),locs.time(igf(skipfirst:end)));
     yfpbh=bindata(freq,yfp,fall);
     plot(ax2,fall,yfpbh,'c'); hold(ax1,'on') 
     % yfpbh(isnan(yfpbh))=0;
     ftya=yfpbh*sum(ig)+ftya;
     % end
 
-    [xfp,freq]=getfft(locs.xnm(ig),locs.time(ig));
+    [xfp,freq]=getfft(locs.xnm(igf(skipfirst:end)),locs.time(igf(skipfirst:end)));
     xfpbh=bindata(freq,xfp,fall);
     plot(ax1,fall,xfpbh,'c'); hold(ax2,'on') 
     % xfpbh(isnan(xfpbh))=0;
