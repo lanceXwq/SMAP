@@ -113,7 +113,7 @@ il.close;
 
 imstack=imcomb;
 if p.alternating
-    intch=mean(mean(imstack-mean(imstack(:)),1),2);
+    intch=mean(mean(imstack-min(imstack(:)),1),2);
     n1=1:2:size(imstack,4);
     n2=2:2:size(imstack,4);
     in1=sum(squeeze(intch(1,1,1,n1))/sum(intch(1,1,1,:))+squeeze(intch(1,1,2,n2))/sum(intch(1,1,2,:)));
