@@ -14,3 +14,10 @@ if isfield(results, 'Dual_tracking_analysis')
         dual_track_summary=vertcat(dual_track_summary,dtvar{k});
     end
 end
+if isfield(results, 'Locstatistics')
+    dtvar = results.Locstatistics;
+    statistics=[];
+    for k=1:length(dtvar)
+        statistics=vertcat(statistics,dtvar{k});
+    end
+end
