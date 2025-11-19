@@ -88,6 +88,7 @@ classdef DialogProcessor<interfaces.GuiModuleInterface & interfaces.LocDataInter
             obj.resultshandle.Renderer='painters';
             
             %make convert to grid
+            try
             hToolbar=findall(obj.resultshandle, 'type', 'uitoolbar');
             pushtool=uipushtool(hToolbar);
             img=ones(16,16,3);
@@ -95,6 +96,9 @@ classdef DialogProcessor<interfaces.GuiModuleInterface & interfaces.LocDataInter
             pushtool.CData=img;
             pushtool.ClickedCallback=@makegridoutput;
             pushtool.Tooltip='Create new figure with all tabs arranged next to each other';
+            catch err
+                warning('Dialog Processor line 100: could not add toolbar')
+            end
             
             htab=uitabgroup(obj.resultshandle);
             obj.guihandles.resultstabgroup=htab;
