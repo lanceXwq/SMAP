@@ -29,7 +29,22 @@ classdef TifSaver<interfaces.DialogProcessor
                 description=sprintf(txt);
 %                 [~,~,ext]=fileparts(f);
                 outim=makeoutputtif(obj,p);
-                imwrite(outim,[path f],'Description',description);
+                pixelsize=obj.getPar('sr_pixrec');
+                xResolution = 1 / pixelsize;
+                tags.ResolutionUnit = Tiff.ResolutionUnit.Centimeter;
+                tags.XResolution = xResolution * 10000000;
+                tags.YResolution = xResolution * 10000000;
+                tags.ImageDescription=description;
+                if size(outim,3)==3
+                    options.color=true;
+                else
+                    options.color=false;
+                end
+                 
+                options.comp='lzw';
+                saveastiff(outim,[path f],options,tags)
+
+                % imwrite(outim,[path f],'Description',description,'Resolution',xResolution);
             end
             obj.status('save done')
             out=[];
