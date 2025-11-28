@@ -49,9 +49,9 @@ classdef export_tiffs<interfaces.DialogProcessor&interfaces.SEProcessor
                 filen=[f strrep(site.name,'.','_')];
                 fhere= [filen '.tif'];
                 if p.export_scalebar
-                    imsel=site.image.composite;
-                else
                     imsel=site.image.image;
+                else
+                    imsel=site.image.composite;
                 end
                 imout=uint8(imsel*255);
                 
