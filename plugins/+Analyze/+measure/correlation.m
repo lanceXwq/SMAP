@@ -1,9 +1,8 @@
 classdef correlation<interfaces.DialogProcessor
-    % LINEPROFILE Calculates profiles along a linear ROI and fits it with a
-    % model of choice. Flat: step function convolved with Gaussian
-    % (=Erf). Disk: Projection of a homogeneously filled disk, convolved
-    % with Gaussian. Ring: Projection of a ring, convolved with
-    % Gaussian. Distance: Two Gaussians in a distance d.
+   % also look at FFT
+   % empty / add button to add up FFT, AC
+   % include 2D analysis? put 1D to ROI?
+   % PERPL: calculate 2D g(r)? fit with lines or grid (2 distances)?
     methods
         function obj=correlation(varargin)        
             obj@interfaces.DialogProcessor(varargin{:});
@@ -16,7 +15,9 @@ classdef correlation<interfaces.DialogProcessor
                 axcorr=obj.initaxis('corr1D');
                 hold(axcorr,'off')
                 axprof=obj.initaxis('prof1D');
-                hold(axprof,'off')              
+                hold(axprof,'off')             
+                axfft=obj.initaxis('FFT');
+                hold(axfft,'off')     
             end
             layers=find(p.sr_layerson);
             k=1;
@@ -40,8 +41,9 @@ classdef correlation<interfaces.DialogProcessor
                 p.binwidth=p.sr_pixrec;
             end
             if p.linecorrelation
-                prof=lineprof(x-mx,y-my,p,axprof);
-                linecorr(x-mx,y-my,p,axcorr)
+                [prof,n]=lineprof(x-mx,y-my,p,axprof);
+                linecorr(prof,n,p,axcorr)
+                fftprof(prof,n,p,axfft)
                 
             end
 
@@ -53,16 +55,17 @@ classdef correlation<interfaces.DialogProcessor
     end
 end
 
-function linecorr(x,y,p,axcorr)
-n=min(x):p.binwidth:max(x);
-nplot=n(1:end-1)+p.binwidth/2;
-prof = histcounts(x,  n);
+function ach=linecorr(prof,x,p,axcorr)
+% n=min(x):p.binwidth:max(x);
+% nplot=n(1:end-1)+p.binwidth/2;
+% prof = histcounts(x,  n);
 ac=xcorr(prof,prof);
 ach=ac(ceil(end/2):end)/max(ac);
 nac=(0:length(ach)-1)'*p.binwidth;
 [yRPeaks,xPeaksIdx]=findpeaks(detrend(ach,'linear'));
 xPeaksIdx(xPeaksIdx<3)=[]; yRPeaks(xPeaksIdx<3)=[]; 
-[~,imxp]=max(yRPeaks);
+
+[~,imxp]=min(abs(nac(xPeaksIdx)-p.period));
 period=nac(xPeaksIdx(imxp));
 % [yRPeaks,xRPeaks] = refinepeaks(ach,xPeaksIdx,nac);
 h1=plot(axcorr,nac,ach,'DisplayName',"correlation, P="+num2str(period));
@@ -88,24 +91,60 @@ acmulticorr=acmulticorr/mean(acmulticorr)*mean(ach);
 hold(axcorr,'on');
 [yRPeaks,xPeaksIdx]=findpeaks(acmulticorr);
 [yRPeaks,xRPeaks] = refinepeaks(acmulticorr,xPeaksIdx,nac);
+
+[~,imxp]=min(abs(xRPeaks-p.period));
 % period=mean(diff(ppos));
-period=xRPeaks(1);
+period=xRPeaks(imxp);
 ff="%2.1f";
 
-h2=plot(axcorr,nac,acmulticorr,'DisplayName',"multi-c: P="+num2str(period,ff));
+h2=plot(axcorr,nac,acmulticorr,'--','DisplayName',"multi-c: P="+num2str(period,ff));
 legend(axcorr)
-
-
-
 end
 
-function prof=lineprof(x,y,p,axprof)
+function [prof,n]=lineprof(x,y,p,axprof)
 n=min(x):p.binwidth:max(x);
 nplot=n(1:end-1)+p.binwidth/2;
 prof = histcounts(x,  n);
-plot(axprof,nplot,prof)
+proffilt=smoothdata(prof,'gaussian',12);
+plot(axprof,nplot,prof,nplot,proffilt)
+[~,xpos]=findpeaks(proffilt,nplot);
+dx=diff(xpos);
+tpos=(xpos(1:end-1)+xpos(2:end))/2;
+text(axprof,tpos,max(proffilt)+0*tpos,string(dx))
 end
 
+function fftprof(prof,nx,p,axfft)
+[f, mag1] = fft_one_sided(nx,[prof zeros(1,0)]);
+
+
+[yRPeaks,xPeaksIdx]=findpeaks(mag1);
+[yRPeaks,xRPeaks] = refinepeaks(mag1,xPeaksIdx,f);
+periods=1./xRPeaks
+
+[~,imxp]=min(abs(periods-p.period));
+period=periods(imxp);
+plot(axfft, f, mag1,'DisplayName',"P: "+num2str(period,"%2.1f"))%,
+hold(axfft,'on')
+plot(axfft,xRPeaks(imxp),yRPeaks(imxp),'kx')
+legend(axfft)
+end
+
+function [f, mag1] = fft_one_sided(t, x)
+% Returns one-sided frequency axis and magnitude |X(f)| for real x(t)
+t = t(:); x = x(:);
+dt = diff(t);
+if max(abs(dt - mean(dt))) > 1e-6*mean(dt)
+    error('Time vector is not uniformly sampled.');
+end
+Fs = 1/mean(dt);
+N = numel(x);
+X = fft(x);
+mag1 = abs(X(1:floor(N/2)+1))/N;
+if N > 2
+    mag1(2:end-1) = 2*mag1(2:end-1);
+end
+f = (0:floor(N/2))*(Fs/N);
+end
 
 function pard=guidef(obj)
 pard.inputParameters={'sr_layerson','linewidth_roi','sr_pixrec'};
@@ -129,6 +168,14 @@ pard.linecorrelation.Width=1;
 pard.c2d.object=struct('String','2D correlation','Style','checkbox','Value',0);
 pard.c2d.position=[2,2];
 pard.c2d.Width=1;
+
+
+pard.periodt.object=struct('String','approximate period (nm)','Style','text');
+pard.periodt.position=[3,1];
+pard.periodt.Width=1.5;
+pard.period.object=struct('String','200','Style','edit');
+pard.period.position=[3,2.5];
+pard.period.Width=0.5;
 
 % pard.text2.object=struct('String','fitmodel:','Style','text');
 % pard.text2.position=[2,1];
