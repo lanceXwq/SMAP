@@ -10,7 +10,8 @@ classdef correlation<interfaces.DialogProcessor
             obj.showresults=true;
         end
         
-        function out=run(obj,p)    
+        function out=run(obj,p)   
+            out=[];
             if p.linecorrelation
                 axcorr=obj.initaxis('corr1D');
                 hold(axcorr,'off')
@@ -19,34 +20,17 @@ classdef correlation<interfaces.DialogProcessor
                 axfft=obj.initaxis('FFT');
                 hold(axfft,'off')     
             end
-            layers=find(p.sr_layerson);
-            k=1;
-            [locs,~, hroi]=obj.locData.getloc({'xnm','ynm','znm','locprecnm','locprecznm','xnmline','ynmline'},'layer',layers(k),'position','roi');
-            linew=p.linewidth_roi/2;
-            if isa(hroi,'imline')
-                x=locs.xnmline;
-                y=locs.ynmline;
-                mx=0;
-                my=0;
-                pos=getPosition(hroi);
-                linel=sqrt((pos(2,1)-pos(1,1))^2+(pos(2,2)-pos(1,2))^2)/2*1000;
-            else
-                x=locs.xnm;
-                y=locs.ynm;
-                pos=getPosition(hroi);
-                mx=mean(pos(:,1));
-                my=mean(pos(:,2));
-            end
             if ~p.setbinwidth
                 p.binwidth=p.sr_pixrec;
             end
-            if p.linecorrelation
-                [prof,n]=lineprof(x-mx,y-my,p,axprof);
-                linecorr(prof,n,p,axcorr)
-                fftprof(prof,n,p,axfft)
-                
-            end
-
+            layers=find(p.sr_layerson);
+            k=1;
+            [locs,~, hroi]=obj.locData.getloc({'xnm','ynm','znm','locprecnm','locprecznm','xnmline','ynmline'},'layer',layers(k),'position','roi');
+            ca=correlationtools(locs,p.binwidth,periodguess=p.period);
+            ca.plot('profile',axis=axprof,color='r')
+            ca.plot('autocorrelation',axis=axcorr,color='r');
+            ca.plot('fft',axis=axfft,color='r');
+           
 
         end
         function pard=guidef(obj)
@@ -55,96 +39,7 @@ classdef correlation<interfaces.DialogProcessor
     end
 end
 
-function ach=linecorr(prof,x,p,axcorr)
-% n=min(x):p.binwidth:max(x);
-% nplot=n(1:end-1)+p.binwidth/2;
-% prof = histcounts(x,  n);
-ac=xcorr(prof,prof);
-ach=ac(ceil(end/2):end)/max(ac);
-nac=(0:length(ach)-1)'*p.binwidth;
-[yRPeaks,xPeaksIdx]=findpeaks(detrend(ach,'linear'));
-xPeaksIdx(xPeaksIdx<3)=[]; yRPeaks(xPeaksIdx<3)=[]; 
 
-[~,imxp]=min(abs(nac(xPeaksIdx)-p.period));
-period=nac(xPeaksIdx(imxp));
-% [yRPeaks,xRPeaks] = refinepeaks(ach,xPeaksIdx,nac);
-h1=plot(axcorr,nac,ach,'DisplayName',"correlation, P="+num2str(period));
-
-
-acs=ac/max(ac);
-% figure(88); hold off
-for k=1:3
-    acs=acs(ceil(end/2):end);
-    acs=detrend(acs,'linear');
-    acs=xcorr(acs-mean(acs),acs-mean(acs));
-    acs=acs/max(acs);
-    % plot(acs)
-    % hold on
-
-end
-
-
-acmulticorr=0.5*(1+acs(ceil(end/2):ceil(end/2)+length(nac)-1));
-acmulticorr=acmulticorr-min(acmulticorr);
-acmulticorr=acmulticorr/mean(acmulticorr)*mean(ach);
-
-hold(axcorr,'on');
-[yRPeaks,xPeaksIdx]=findpeaks(acmulticorr);
-[yRPeaks,xRPeaks] = refinepeaks(acmulticorr,xPeaksIdx,nac);
-
-[~,imxp]=min(abs(xRPeaks-p.period));
-% period=mean(diff(ppos));
-period=xRPeaks(imxp);
-ff="%2.1f";
-
-h2=plot(axcorr,nac,acmulticorr,'--','DisplayName',"multi-c: P="+num2str(period,ff));
-legend(axcorr)
-end
-
-function [prof,n]=lineprof(x,y,p,axprof)
-n=min(x):p.binwidth:max(x);
-nplot=n(1:end-1)+p.binwidth/2;
-prof = histcounts(x,  n);
-proffilt=smoothdata(prof,'gaussian',12);
-plot(axprof,nplot,prof,nplot,proffilt)
-[~,xpos]=findpeaks(proffilt,nplot);
-dx=diff(xpos);
-tpos=(xpos(1:end-1)+xpos(2:end))/2;
-text(axprof,tpos,max(proffilt)+0*tpos,string(dx))
-end
-
-function fftprof(prof,nx,p,axfft)
-[f, mag1] = fft_one_sided(nx,[prof zeros(1,0)]);
-
-
-[yRPeaks,xPeaksIdx]=findpeaks(mag1);
-[yRPeaks,xRPeaks] = refinepeaks(mag1,xPeaksIdx,f);
-periods=1./xRPeaks
-
-[~,imxp]=min(abs(periods-p.period));
-period=periods(imxp);
-plot(axfft, f, mag1,'DisplayName',"P: "+num2str(period,"%2.1f"))%,
-hold(axfft,'on')
-plot(axfft,xRPeaks(imxp),yRPeaks(imxp),'kx')
-legend(axfft)
-end
-
-function [f, mag1] = fft_one_sided(t, x)
-% Returns one-sided frequency axis and magnitude |X(f)| for real x(t)
-t = t(:); x = x(:);
-dt = diff(t);
-if max(abs(dt - mean(dt))) > 1e-6*mean(dt)
-    error('Time vector is not uniformly sampled.');
-end
-Fs = 1/mean(dt);
-N = numel(x);
-X = fft(x);
-mag1 = abs(X(1:floor(N/2)+1))/N;
-if N > 2
-    mag1(2:end-1) = 2*mag1(2:end-1);
-end
-f = (0:floor(N/2))*(Fs/N);
-end
 
 function pard=guidef(obj)
 pard.inputParameters={'sr_layerson','linewidth_roi','sr_pixrec'};
