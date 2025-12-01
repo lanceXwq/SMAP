@@ -26,10 +26,16 @@ classdef correlation<interfaces.DialogProcessor
             layers=find(p.sr_layerson);
             k=1;
             [locs,~, hroi]=obj.locData.getloc({'xnm','ynm','znm','locprecnm','locprecznm','xnmline','ynmline'},'layer',layers(k),'position','roi');
+
+
+            paircorrelationfunction(locs.xnm,locs.ynm,roihandle=obj.getPar('sr_roihandle'))
+
+
             ca=correlationtools(locs,p.binwidth,periodguess=p.period);
             ca.plot('profile',axis=axprof,color='r')
             ca.plot('autocorrelation',axis=axcorr,color='r');
             ca.plot('fft',axis=axfft,color='r');
+            paircorrelationfunction(locs.xnm,locs.ynm,roihandle=getPar('sr_roihandle'))
            
 
         end
