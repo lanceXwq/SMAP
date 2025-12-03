@@ -12,12 +12,14 @@ classdef correlationtools<handle
         fft
         profile
         autocorrelation
+        crosscorrelation
         periodguess
         sigmafilter
         maxcorr
         
         fftav
         autocorrelationav
+        crosscorrelationav
         numav
         
     end
@@ -64,17 +66,34 @@ classdef correlationtools<handle
         end
         function calculateautocorrelation(obj)
             ac=xcorr(obj.profile.counts,obj.profile.counts)/mean(obj.profile.counts)^2;
-            ach=ac(ceil(end/2):end)/max(ac);
-            nac=(0:length(ach)-1)'*obj.bin;
-            obj.autocorrelation.mag=ach;
+            % ach=ac(ceil(end/2):end)/max(ac);
+            % nac=(0:length(ach)-1)'*obj.bin;
+            lm=floor(length(ac)/2);
+            nac=(-lm:lm)'*obj.bin;
+            obj.autocorrelation.mag=ac;
             obj.autocorrelation.lag=nac;
             obj.autocorrelation.nx=nac;
             analyzeautocorrelation(obj,'autocorrelation',1)
         end
+        function calculatecrosscorrelation(obj,ca2)
+            cc=xcorr(obj.profile.counts,ca2.profile.counts)/mean(obj.profile.counts)/mean(ca2.profile.counts);
+            lm=floor(length(cc)/2);
+            nac=(-lm:lm)'*obj.bin;
+            % ach=cc(ceil(end/2):end)/max(cc);
+            % nac=(0:length(ach)-1)'*obj.bin;
+            obj.crosscorrelation.mag=cc;
+            obj.crosscorrelation.lag=nac;
+            obj.crosscorrelation.nx=nac;
+            analyzeautocorrelation(obj,'crosscorrelation',1)
+        end
+
         function analyzeautocorrelation(obj,f,norm)
+            if isempty(obj.(f))
+                return
+            end
             ach=obj.(f).mag/norm;
             nac=obj.(f).lag;
-            [yRPeaks,xPeaksIdx]=findpeaks(detrend(ach,'linear'));
+            [yRPeaks,xPeaksIdx]=findpeaks(detrend(ach,2));
             xPeaksIdx(xPeaksIdx<3)=[]; 
             [obj.(f).period,obj.(f).periodmag]=obj.selectpeak(nac(xPeaksIdx),ach(xPeaksIdx));
 
@@ -84,10 +103,10 @@ classdef correlationtools<handle
 
             acs=ach;
             for k=1:3
-                acs=detrend(acs,'linear');
+                acs=detrend(acs,2);
                 acs=xcorr(acs-mean(acs),acs-mean(acs));
                 acs=acs/max(acs);
-                acs=acs(ceil(end/2):end);
+                acs=acs(ceil(end/4):ceil(end/4*3));
             end
 
             [yRPeaks,xPeaksIdx]=findpeaks(acs);
@@ -123,8 +142,8 @@ classdef correlationtools<handle
             obj.(fi).peaks.x=xRPeaks;
             obj.(fi).peaks.y=yRPeaks;
         end
-        function crosscorrelationi(obj)
-        end
+        % function crosscorrelationi(obj)
+        % end
         function nx=nx(obj)
             nx=double(min(obj.x):obj.bin:max(obj.x))';
         end
@@ -147,7 +166,7 @@ classdef correlationtools<handle
                 case 'profile'
                     plot(options.axis,obj.profile.nx,obj.profile.counts,'Color',options.color,'DisplayName',"profile")
                     hold(options.axis,'on')
-                    plot(options.axis,obj.profile.filter.nx,obj.profile.filter.counts,'--','Color',options.color,'DisplayName','filt')
+                    plot(options.axis,obj.profile.filter.nx,obj.profile.filter.counts,'-','Color',options.color,'DisplayName','filt','LineWidth',2)
                     if options.plotpeaks
                         xpos=obj.profile.filter.peaks.x;
                         dx=diff(xpos);
@@ -176,7 +195,7 @@ classdef correlationtools<handle
                     xlabel(options.axis,"frequency (1/nm)")
                     ylabel(options.axis,"magnitude")
 
-                case {'autocorrelation','autocorrelationav'}
+                case {'autocorrelation','autocorrelationav','crosscorrelation','crosscorrelationav'}
                     ac=obj.(prop);
                     if options.average
                         norm=obj.numav;
@@ -192,10 +211,10 @@ classdef correlationtools<handle
                     acf=acf-off;
                     fac=mean(acf)*mean(ac.mag/norm);
                     acf=acf*fac;
-                    h2=plot(options.axis,ac.nx,acf,'--','Color',options.color,'DisplayName',"multi-c: P="+num2str(ac.filter.period,ff));
+                    h2=plot(options.axis,ac.nx,acf,':','Color',options.color,'DisplayName',"multi-c: P="+num2str(ac.filter.period,ff));
                     legend(options.axis)
                     if ~isempty(obj.maxcorr)
-                        xlim(options.axis,[0 obj.maxcorr])
+                        xlim(options.axis,[-obj.maxcorr obj.maxcorr])
                     end
 
                     if options.plotpeaks
@@ -217,27 +236,35 @@ classdef correlationtools<handle
         function add(obj,co)
             if isempty(obj.autocorrelationav) %also true for fft, always together
                 obj.autocorrelationav=obj.autocorrelation;
+                obj.crosscorrelationav=obj.crosscorrelation;
                 obj.fftav=obj.fft;
                 obj.numav=1;
 
             else
                 obj.autocorrelationav=addminlenstruc(obj.autocorrelationav,co.autocorrelation,{'mag'});
                 obj.autocorrelationav=copyminlenstruc(obj.autocorrelationav,co.autocorrelation,{'lag','nx'});
-
+                % if ~isempty(co.crosscorrelation)&& ~isempty(obj.crosscorrelationav)
+                obj.crosscorrelationav=addminlenstruc(obj.crosscorrelationav,co.crosscorrelation,{'mag'});
+                obj.crosscorrelationav=copyminlenstruc(obj.crosscorrelationav,co.crosscorrelation,{'lag','nx'});
+                % end
                 obj.fftav=addminlenstruc(obj.fftav,co.fft,{'mag'});
                 obj.fftav=copyminlenstruc(obj.fftav,co.fft,{'f','xplot'});
                 obj.numav=obj.numav+1;
                 %add
             end
             analyzeautocorrelation(obj,'autocorrelationav',obj.numav)
+            % if ~isempty(obj.crosscorrelationav)
+            analyzeautocorrelation(obj,'crosscorrelationav',obj.numav)
+            % end
             analyzefft(obj,'fftav',obj.numav)
             %recalculate peaks, averages etc
 
         end
         function [peak,peaky]=selectpeak(obj,xpeaks,ypeaks)
-            if ~isempty(obj.periodguess)
+            if ~isempty(obj.periodguess) && obj.periodguess~=0
                 [~,imxp]=min(abs(xpeaks-obj.periodguess));
             else
+                ypeaks(abs(xpeaks)==0)=0; %exclude zero peak
                 [~,imxp]=max(ypeaks);
             end
             peak=xpeaks(imxp);
@@ -248,6 +275,10 @@ classdef correlationtools<handle
 end
 
 function so=addminlenstruc(s1,s2,fields)
+if isempty(s1) || isempty(s2)
+    so=[];
+    return
+end
 so=s1;
 for k=1:length(fields)
     so.(fields{k})=addminlen(s1.(fields{k}),s2.(fields{k}));
@@ -264,6 +295,10 @@ end
 
 
 function so=copyminlenstruc(s1,s2,fields)
+if isempty(s1) || isempty(s2)
+    so=[];
+    return
+end
 so=s1;
 for k=1:length(fields)
     if length(s1.(fields{k}))<length(s2.(fields{k}))

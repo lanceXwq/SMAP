@@ -24,16 +24,16 @@ classdef correlation<interfaces.DialogProcessor
                 if ~contains(class(roih),'imline')
                     warning('ROI needs to be imline. cannot execute correlation analysis');
                 else
-                    axcorr=obj.initaxis('corr1D');
-                    hold(axcorr,'off')
-                    axcorrav=obj.initaxis('corr1Dav');
-                    hold(axcorr,'off')
-                    axprof=obj.initaxis('prof1D');
-                    hold(axprof,'off')             
-                    axfft=obj.initaxis('FFT');
-                    hold(axfft,'off')    
                     axfftav=obj.initaxis('FFTav');
-                    hold(axfftav,'on')
+                    axcorrav=obj.initaxis('corr1Dav');
+                    axcorr=obj.initaxis('corr1D');
+                    axfft=obj.initaxis('FFT');
+                    axprof=obj.initaxis('prof1D');
+                    hold(axprof,'off')    
+                    hold(axcorr,'off')
+                    hold(axfft,'off') 
+                    hold(axcorr,'off')
+                    hold(axfftav,'off')
                 end
             elseif contains(p.mode.selection,"2D pair correlation")
                 axpcf=obj.initaxis('PCF');
@@ -43,48 +43,58 @@ classdef correlation<interfaces.DialogProcessor
                 p.binwidth=p.sr_pixrec;
             end
             layers=find(p.sr_layerson);
-            k=1;
-            [locs,~, hroi]=obj.locData.getloc({'xnm','ynm','znm','locprecnm','locprecznm','xnmline','ynmline'},'layer',layers(k),'position','roi');
-
-
-            % paircorrelationfunction(locs.xnm,locs.ynm,roihandle=obj.getPar('sr_roihandle'))
-            if contains(p.mode.selection,"2D pair correlation")
-                [grn,xx]=paircorrelationfunction(locs.xnm,locs.ynm,roihandle=roih,dr=p.binwidth,rmax=p.maxr);
-                plot(axpcf,xx(2:end),grn(2:end)); 
-                xlabel(axpcf,'r (nm)')
-                ylabel(axpcf,'pair correlation function (norm)')
-            elseif contains(p.mode.selection,"1D correlation")
-                if  contains(class(roih),'imline')
-                    ca=correlationtools(locs,p.binwidth,periodguess=p.period,maxcorr=p.maxr);
-                    ca.plot('profile',axis=axprof,color='r')
-                    ca.plot('autocorrelation',axis=axcorr,color='r');
-                    ca.plot('fft',axis=axfft,color='r');
-                    obj.currentcorr=ca;
-                    if ~isempty(obj.averagecorr)
-                        obj.averagecorr.plot('autocorrelationav',axis=axcorrav,color='r',average=true);
-                        obj.averagecorr.plot('fftav',axis=axfftav,color='r',average=true);
+            colors=lines(length(layers));
+            for k=1:length(layers)
+                [locs,~, hroi]=obj.locData.getloc({'xnm','ynm','znm','locprecnm','locprecznm','xnmline','ynmline'},'layer',layers(k),'position','roi');
+                % paircorrelationfunction(locs.xnm,locs.ynm,roihandle=obj.getPar('sr_roihandle'))
+                if contains(p.mode.selection,"2D pair correlation")
+                    [grn,xx]=paircorrelationfunction(locs.xnm,locs.ynm,roihandle=roih,dr=p.binwidth,rmax=p.maxr);
+                    plot(axpcf,xx(2:end),grn(2:end)); 
+                    xlabel(axpcf,'r (nm)')
+                    ylabel(axpcf,'pair correlation function (norm)')
+                elseif contains(p.mode.selection,"1D correlation")
+                    if  contains(class(roih),'imline')
+                        ca(k)=correlationtools(locs,p.binwidth,periodguess=p.period,maxcorr=p.maxr);
+                        ca(k).plot('profile',axis=axprof,color=colors(k,:))
+                        ca(k).plot('autocorrelation',axis=axcorr,color=colors(k,:));
+                        ca(k).plot('fft',axis=axfft,color=colors(k,:));
+                        
+                        if ~isempty(obj.averagecorr)
+                            obj.averagecorr(k).plot('autocorrelationav',axis=axcorrav,color=colors(k,:),average=true);
+                            obj.averagecorr(k).plot('fftav',axis=axfftav,color=colors(k,:),average=true);
+                        end
+                        
+                    else
+                        warning('line correlation needs line ROI')
                     end
-                    
-                else
-                    warning('line correlation needs line ROI')
+                      
                 end
-                  
             end
+            obj.currentcorr=ca;
 
-           
-
+            if length(layers)>1 && contains(p.mode.selection,"1D correlation") %CC, only 2 layers can be active
+                % obj.currentcorr=ca(1);
+                ca(1).calculatecrosscorrelation(ca(2));
+                ca(1).plot('crosscorrelation',axis=axcorr,color='k');
+                if ~isempty(obj.averagecorr)
+                    obj.averagecorr(1).plot('crosscorrelationav',axis=axcorrav,color='k',average=true);
+                end
+            end
         end
         function button_callback(obj,a,b)
+            
             if contains(a.String,'Add')
                 if isempty(obj.averagecorr)
                     obj.averagecorr=obj.currentcorr;
                 end
-                obj.averagecorr.add(obj.currentcorr);
+                for k=1:length(obj.currentcorr)
+                    obj.averagecorr(k).add(obj.currentcorr(k));
+                end
                 
             else %clear
                 obj.averagecorr=[];
             end
-
+           
         end
         function pard=guidef(obj)
             pard=guidef(obj);
