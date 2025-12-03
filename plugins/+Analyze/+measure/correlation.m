@@ -13,12 +13,21 @@ classdef correlation<interfaces.DialogProcessor
         function out=run(obj,p)   
             out=[];
             if p.linecorrelation
-                axcorr=obj.initaxis('corr1D');
-                hold(axcorr,'off')
-                axprof=obj.initaxis('prof1D');
-                hold(axprof,'off')             
-                axfft=obj.initaxis('FFT');
-                hold(axfft,'off')     
+                roih=obj.getPar('sr_roihandle');
+                if ~contains(class(roih),'imline')
+                    warning('ROI needs to be imline. cannot execute correlation analysis');
+                else
+                    axcorr=obj.initaxis('corr1D');
+                    hold(axcorr,'off')
+                    axprof=obj.initaxis('prof1D');
+                    hold(axprof,'off')             
+                    axfft=obj.initaxis('FFT');
+                    hold(axfft,'off')     
+                end
+            end
+            if p.pc
+                axpcf=obj.initaxis('PCF');
+                hold(axpcf,'off')     
             end
             if ~p.setbinwidth
                 p.binwidth=p.sr_pixrec;
@@ -28,14 +37,20 @@ classdef correlation<interfaces.DialogProcessor
             [locs,~, hroi]=obj.locData.getloc({'xnm','ynm','znm','locprecnm','locprecznm','xnmline','ynmline'},'layer',layers(k),'position','roi');
 
 
-            paircorrelationfunction(locs.xnm,locs.ynm,roihandle=obj.getPar('sr_roihandle'))
+            % paircorrelationfunction(locs.xnm,locs.ynm,roihandle=obj.getPar('sr_roihandle'))
+            if p.pc
+                [grn,xx]=paircorrelationfunction(locs.xnm,locs.ynm,roihandle=roih,dr=p.binwidth,rmax=p.maxr);
+                plot(axpcf,xx(2:end),grn(2:end)); 
+                xlabel(axpcf,'r (nm)')
+                ylabel(axpcf,'pair correlation function (norm)')
+            end
+            if p.linecorrelation && contains(class(roih),'imline')
+                ca=correlationtools(locs,p.binwidth,periodguess=p.period,maxcorr=p.maxr);
+                ca.plot('profile',axis=axprof,color='r')
+                ca.plot('autocorrelation',axis=axcorr,color='r');
+                ca.plot('fft',axis=axfft,color='r');
+            end
 
-
-            ca=correlationtools(locs,p.binwidth,periodguess=p.period);
-            ca.plot('profile',axis=axprof,color='r')
-            ca.plot('autocorrelation',axis=axcorr,color='r');
-            ca.plot('fft',axis=axfft,color='r');
-            paircorrelationfunction(locs.xnm,locs.ynm,roihandle=getPar('sr_roihandle'))
            
 
         end
@@ -52,12 +67,12 @@ pard.inputParameters={'sr_layerson','linewidth_roi','sr_pixrec'};
 
  p(1).value=0; p(1).on={}; p(1).off={'binwidth'};
 p(2).value=1; p(2).on={'binwidth'}; p(2).off={};
-pard.setbinwidth.object=struct('String','set binwidth (nm) (otherwise: pixelsize):','Style','checkbox','Value',1,'Callback',{{@obj.switchvisible,p}});
+pard.setbinwidth.object=struct('String','binwidth (nm) (empty: pixelsize):','Style','checkbox','Value',1,'Callback',{{@obj.switchvisible,p}});
 pard.setbinwidth.position=[1,1];
 pard.setbinwidth.Width=3;
 
 pard.binwidth.object=struct('String','10','Style','edit');
-pard.binwidth.position=[1,3.5];
+pard.binwidth.position=[1,3];
 pard.binwidth.Width=0.5;
 pard.binwidth.TooltipString='Binwidth for profiles. If not checked, use pixel size of reconstruction';
 pard.setbinwidth.TooltipString=pard.binwidth.TooltipString;
@@ -66,9 +81,9 @@ pard.linecorrelation.object=struct('String','1D correlation','Style','checkbox',
 pard.linecorrelation.position=[2,1];
 pard.linecorrelation.Width=1;
 
-pard.c2d.object=struct('String','2D correlation','Style','checkbox','Value',0);
-pard.c2d.position=[2,2];
-pard.c2d.Width=1;
+pard.pc.object=struct('String','2D pair correlation','Style','checkbox','Value',0);
+pard.pc.position=[2,2];
+pard.pc.Width=1;
 
 
 pard.periodt.object=struct('String','approximate period (nm)','Style','text');
@@ -78,6 +93,12 @@ pard.period.object=struct('String','200','Style','edit');
 pard.period.position=[3,2.5];
 pard.period.Width=0.5;
 
+pard.maxrt.object=struct('String','max correlation (nm)','Style','text');
+pard.maxrt.position=[3,3];
+pard.maxrt.Width=1.5;
+pard.maxr.object=struct('String','1000','Style','edit');
+pard.maxr.position=[3,4.5];
+pard.maxr.Width=0.5;
 % pard.text2.object=struct('String','fitmodel:','Style','text');
 % pard.text2.position=[2,1];
 % 

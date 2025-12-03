@@ -14,6 +14,7 @@ classdef correlationtools<handle
         autocorrelation
         periodguess
         sigmafilter
+        maxcorr
         
     end
     methods
@@ -23,9 +24,11 @@ classdef correlationtools<handle
                 bin
                 options.periodguess=[];
                 options.sigmafilter=2;
+                options.maxcorr=[];
             end
             obj.periodguess=options.periodguess;
             obj.sigmafilter=options.sigmafilter;
+            obj.maxcorr=options.maxcorr;
             if isa(posin, 'struct')
                 if isfield(posin,'xnmline')
                     obj.x=posin.xnmline;
@@ -136,6 +139,8 @@ classdef correlationtools<handle
                         text(options.axis,tpos,max(obj.profile.filter.counts)+0*tpos,compose(ff,dx))
                         plot(options.axis,obj.profile.filter.peaks.x,obj.profile.filter.peaks.y,'o','Color',options.color)
                     end
+                     xlabel(options.axis,"position (nm)")
+                     ylabel(options.axis,"counts")
                 case 'fft'
                     ft=obj.fft;
                     plot(options.axis, ft.f, ft.mag,'Color',options.color,'DisplayName',"P: "+num2str(ft.period,ff));
@@ -146,6 +151,9 @@ classdef correlationtools<handle
 
                     end
                     legend(options.axis)
+                    xlim(options.axis,[0 10/ft.period])
+                    xlabel(options.axis,"frequency (1/nm)")
+                    ylabel(options.axis,"magnitude")
 
                 case 'autocorrelation'
                     ac=obj.autocorrelation;
@@ -160,12 +168,19 @@ classdef correlationtools<handle
                     acf=acf*fac;
                     h2=plot(options.axis,ac.nx,acf,'--','Color',options.color,'DisplayName',"multi-c: P="+num2str(ac.filter.period,ff));
                     legend(options.axis)
+                    if ~isempty(obj.maxcorr)
+                        xlim(options.axis,[0 obj.maxcorr])
+                    end
+
                     if options.plotpeaks
                         plot(options.axis,ac.peaks.x,(ac.peaks.y),'x','Color',options.color,'HandleVisibility','off')
                         plot(options.axis,ac.period,ac.periodmag,'o','Color',options.color,'HandleVisibility','off')
                         plot(options.axis,ac.filter.peaks.x,(ac.filter.peaks.y-off)*fac,'x','Color',options.color,'HandleVisibility','off')
                         plot(options.axis,ac.filter.period,(ac.filter.periodmag-off)*fac,'o','Color',options.color,'HandleVisibility','off')
                     end
+
+                    xlabel(options.axis,"dx (nm)")
+                    ylabel(options.axis,"g(r)")
                 otherwise
                     disp('not implemented')
             end
