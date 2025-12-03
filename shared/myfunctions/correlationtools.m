@@ -16,6 +16,10 @@ classdef correlationtools<handle
         sigmafilter
         maxcorr
         
+        fftav
+        autocorrelationav
+        numav
+        
     end
     methods
         function obj = correlationtools(posin,bin,options)
@@ -40,8 +44,8 @@ classdef correlationtools<handle
             end
             obj.bin=bin;
             obj.calculateprofile;
-            obj.calculatefft
-            obj.calculateautocorrelation
+            obj.calculatefft;
+            obj.calculateautocorrelation;
             
         end
         function calculateprofile(obj)
@@ -62,17 +66,23 @@ classdef correlationtools<handle
             ac=xcorr(obj.profile.counts,obj.profile.counts)/mean(obj.profile.counts)^2;
             ach=ac(ceil(end/2):end)/max(ac);
             nac=(0:length(ach)-1)'*obj.bin;
-            [yRPeaks,xPeaksIdx]=findpeaks(detrend(ach,'linear'));
-            xPeaksIdx(xPeaksIdx<3)=[]; 
-            [obj.autocorrelation.period,obj.autocorrelation.periodmag]=obj.selectpeak(nac(xPeaksIdx),ach(xPeaksIdx));
-
             obj.autocorrelation.mag=ach;
             obj.autocorrelation.lag=nac;
             obj.autocorrelation.nx=nac;
-            obj.autocorrelation.peaks.x=nac(xPeaksIdx);
-            obj.autocorrelation.peaks.y=ach(xPeaksIdx);
+            analyzeautocorrelation(obj,'autocorrelation',1)
+        end
+        function analyzeautocorrelation(obj,f,norm)
+            ach=obj.(f).mag/norm;
+            nac=obj.(f).lag;
+            [yRPeaks,xPeaksIdx]=findpeaks(detrend(ach,'linear'));
+            xPeaksIdx(xPeaksIdx<3)=[]; 
+            [obj.(f).period,obj.(f).periodmag]=obj.selectpeak(nac(xPeaksIdx),ach(xPeaksIdx));
 
-            acs=obj.autocorrelation.mag;
+
+            obj.(f).peaks.x=nac(xPeaksIdx);
+            obj.(f).peaks.y=ach(xPeaksIdx);
+
+            acs=ach;
             for k=1:3
                 acs=detrend(acs,'linear');
                 acs=xcorr(acs-mean(acs),acs-mean(acs));
@@ -82,13 +92,13 @@ classdef correlationtools<handle
 
             [yRPeaks,xPeaksIdx]=findpeaks(acs);
             [yRPeaks,xRPeaks] = refinepeaks(acs,xPeaksIdx,nac);
-            [obj.autocorrelation.filter.period,obj.autocorrelation.filter.periodmag]=obj.selectpeak(xRPeaks,yRPeaks);
+            [obj.(f).filter.period,obj.(f).filter.periodmag]=obj.selectpeak(xRPeaks,yRPeaks);
 
             % obj.autocorrelation.filter.period=periodfilt;
-            obj.autocorrelation.filter.peaks.x=xRPeaks;
-            obj.autocorrelation.filter.peaks.y=yRPeaks;
-            obj.autocorrelation.filter.mag=acs;
-            obj.autocorrelation.filter.nx=nac;
+            obj.(f).filter.peaks.x=xRPeaks;
+            obj.(f).filter.peaks.y=yRPeaks;
+            obj.(f).filter.mag=acs;
+            obj.(f).filter.nx=nac;
             
 
             % acmulticorr=0.5*(1+acs(ceil(end/2):ceil(end/2)+length(nac)-1));
@@ -97,16 +107,21 @@ classdef correlationtools<handle
         end
         function calculatefft(obj)
             [f, mag] = fft_one_sided(obj.nx,obj.profile.counts);
-            [yRPeaks,xPeaksIdx]=findpeaks(mag);
-            [yRPeaks,xRPeaks] = refinepeaks(mag,xPeaksIdx,f);
-            periods=1./xRPeaks;
-            [obj.fft.period,obj.fft.periodmag]=obj.selectpeak(periods,yRPeaks);
-            
-            obj.fft.peaks.x=xRPeaks;
-            obj.fft.peaks.y=yRPeaks;
             obj.fft.mag=mag;
             obj.fft.f=f;
             obj.fft.xplot=f;
+            obj.analyzefft('fft',1)
+        end
+        function analyzefft(obj,fi,norm)
+            mag=obj.(fi).mag/norm;
+            f=obj.(fi).f;
+            [yRPeaks,xPeaksIdx]=findpeaks(mag);
+            [yRPeaks,xRPeaks] = refinepeaks(mag,xPeaksIdx,f);
+            periods=1./xRPeaks;
+            [obj.(fi).period,obj.(fi).periodmag]=obj.selectpeak(periods,yRPeaks);
+            
+            obj.(fi).peaks.x=xRPeaks;
+            obj.(fi).peaks.y=yRPeaks;
         end
         function crosscorrelationi(obj)
         end
@@ -125,6 +140,7 @@ classdef correlationtools<handle
                 options.plotpeaks=true;
                 options.axis=gca;
                 options.color='b';
+                options.average=false;
             end
             ff="%2.1f";
             switch prop
@@ -141,9 +157,14 @@ classdef correlationtools<handle
                     end
                      xlabel(options.axis,"position (nm)")
                      ylabel(options.axis,"counts")
-                case 'fft'
-                    ft=obj.fft;
-                    plot(options.axis, ft.f, ft.mag,'Color',options.color,'DisplayName',"P: "+num2str(ft.period,ff));
+                case {'fft','fftav'}
+                    ft=obj.(prop);
+                    if options.average
+                        norm=obj.numav;
+                    else
+                        norm=1;
+                    end
+                    plot(options.axis, ft.f, ft.mag/norm,'Color',options.color,'DisplayName',"P: "+num2str(ft.period,ff));
                     hold(options.axis,'on')
                     if options.plotpeaks
                         plot(options.axis,1/ft.period,ft.periodmag,'o','Color',options.color,'HandleVisibility','off')
@@ -155,16 +176,21 @@ classdef correlationtools<handle
                     xlabel(options.axis,"frequency (1/nm)")
                     ylabel(options.axis,"magnitude")
 
-                case 'autocorrelation'
-                    ac=obj.autocorrelation;
-                    h1=plot(options.axis,ac.nx,ac.mag,'Color',options.color,'DisplayName',"correlation, P="+num2str(ac.period,ff));
+                case {'autocorrelation','autocorrelationav'}
+                    ac=obj.(prop);
+                    if options.average
+                        norm=obj.numav;
+                    else
+                        norm=1;
+                    end
+                    h1=plot(options.axis,ac.nx,ac.mag/norm,'Color',options.color,'DisplayName',"correlation, P="+num2str(ac.period,ff));
                     hold(options.axis,'on')
 
 
                     acf=ac.filter.mag;
                     off=min(acf);
                     acf=acf-off;
-                    fac=mean(acf)*mean(ac.mag);
+                    fac=mean(acf)*mean(ac.mag/norm);
                     acf=acf*fac;
                     h2=plot(options.axis,ac.nx,acf,'--','Color',options.color,'DisplayName',"multi-c: P="+num2str(ac.filter.period,ff));
                     legend(options.axis)
@@ -187,6 +213,27 @@ classdef correlationtools<handle
            
 
         end
+
+        function add(obj,co)
+            if isempty(obj.autocorrelationav) %also true for fft, always together
+                obj.autocorrelationav=obj.autocorrelation;
+                obj.fftav=obj.fft;
+                obj.numav=1;
+
+            else
+                obj.autocorrelationav=addminlenstruc(obj.autocorrelationav,co.autocorrelation,{'mag'});
+                obj.autocorrelationav=copyminlenstruc(obj.autocorrelationav,co.autocorrelation,{'lag','nx'});
+
+                obj.fftav=addminlenstruc(obj.fftav,co.fft,{'mag'});
+                obj.fftav=copyminlenstruc(obj.fftav,co.fft,{'f','xplot'});
+                obj.numav=obj.numav+1;
+                %add
+            end
+            analyzeautocorrelation(obj,'autocorrelationav',obj.numav)
+            analyzefft(obj,'fftav',obj.numav)
+            %recalculate peaks, averages etc
+
+        end
         function [peak,peaky]=selectpeak(obj,xpeaks,ypeaks)
             if ~isempty(obj.periodguess)
                 [~,imxp]=min(abs(xpeaks-obj.periodguess));
@@ -199,6 +246,34 @@ classdef correlationtools<handle
            
     end
 end
+
+function so=addminlenstruc(s1,s2,fields)
+so=s1;
+for k=1:length(fields)
+    so.(fields{k})=addminlen(s1.(fields{k}),s2.(fields{k}));
+end
+
+end
+function so=addminlen(s1,s2)
+if length(s1)<=length(s2)
+    so=s1+s2(1:length(s1));
+else
+    so=s1(1:length(s2))+s2;
+end
+end
+
+
+function so=copyminlenstruc(s1,s2,fields)
+so=s1;
+for k=1:length(fields)
+    if length(s1.(fields{k}))<length(s2.(fields{k}))
+        so.(fields{k})=s1.(fields{k});
+    else
+        so.(fields{k})=s2.(fields{k});
+    end
+end
+end
+
 
 
 function [f, mag1] = fft_one_sided(t, x)
