@@ -1,4 +1,5 @@
 %% This pluging finds trajectories and list to the ROI manager. Modified from Segment_cotracks.m by Lasse Drengk.
+%% additional functions: duplicate filter, skipping the first n locs when determining the length
 
 classdef Segment_singletracks<interfaces.DialogProcessor
     %Links molecules in consecutive frames for SPT analysis
@@ -23,10 +24,21 @@ out = [];
 
 % Parameters
 minlenlocs = p.minlenlocs;
-lennmstartend = p.lennmstartend; 
+lennmstartend = p.lennmstartend;
+skipN = p.skipNLocs;
 layers = find(obj.getPar('sr_layerson'));
 
+% Get localization data
 [locs,~] = obj.locData.getloc({'xnm','ynm','time','tid','filenumber','thi'},'layer',layers,'position','all','grouping','ungrouped','removefilter','filenumber');
+
+% Remove duplicates safely
+locMat = [locs.xnm(:), locs.ynm(:), locs.time(:), locs.tid(:), locs.filenumber(:), locs.thi(:)];
+[~, ia] = unique(locMat, 'rows', 'stable'); % Keep first occurrences
+fields = fieldnames(locs);
+for f = 1:numel(fields)
+    locs.(fields{f}) = locs.(fields{f})(ia);
+end
+% end of removing duplicates. This code part may be removed if wished
 
 SE = obj.locData.SE;
 
@@ -61,6 +73,11 @@ for ff = 1:length(fnums)
         yh = locs.ynm(idh);
         time = locs.time(idh);
 
+        % Filtering out the first N locs for lenght of track
+        xh = xh((skipN+1):end);
+        yh = yh((skipN+1):end);
+        time = time((skipN+1):end);
+
         len = sqrt((xh(end)-xh(1)).^2+(yh(end)-yh(1)).^2);
         if len < lennmstartend
             continue
@@ -89,7 +106,7 @@ pard.minlenlocst.object = struct('String','Min length track (locs)','Style','tex
 pard.minlenlocst.position = [2,1];
 pard.minlenlocst.Width = 1.5;
 
-pard.minlenlocs.object = struct('String','5','Style','edit');
+pard.minlenlocs.object = struct('String','100','Style','edit');
 pard.minlenlocs.position = [2,2.5];
 pard.minlenlocs.Width = .5;
 
@@ -97,11 +114,18 @@ pard.lennmstartendt.object = struct('String','start-end (nm) >','Style','text');
 pard.lennmstartendt.position = [2,3.5];
 pard.lennmstartendt.Width = 1.;
 
-pard.lennmstartend.object = struct('String','300','Style','edit');
+pard.lennmstartend.object = struct('String','50','Style','edit');
 pard.lennmstartend.position = [2,4.5];
 pard.lennmstartend.Width = .5;
 
-pard.plugininfo.description = sprintf('co-tracking analysis');
-pard.plugininfo.type = 'ProcessorPlugin';
-end 
+pard.skipNLocst.object = struct('String','Skip first N locs','Style','text');
+pard.skipNLocst.position = [3,1];
+pard.skipNLocst.Width = 1;
 
+pard.skipNLocs.object = struct('String','0','Style','edit');
+pard.skipNLocs.position = [3,2.5];
+pard.skipNLocs.Width = 0.5;
+
+pard.plugininfo.description = sprintf('single-path tracking analysis');
+pard.plugininfo.type = 'ProcessorPlugin';
+end
