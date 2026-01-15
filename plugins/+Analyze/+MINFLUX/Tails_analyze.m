@@ -106,7 +106,9 @@ for k=1:length(tidgood)
 end
 
 
-plot(p.taillengthduration,taillocs+ (rand(length(taillocs),1))*0.5,taillen,'.');  hold(p.taillengthduration,"on")
+% plot(p.taillengthduration,taillocs+ (rand(length(taillocs),1))*0.5,taillen,'.');  hold(p.taillengthduration,"on")
+axes(p.taillengthduration); hold(p.taillengthduration,'on');
+plot(p.taillengthduration, taillocs + rand(size(taillocs))*0.5, taillen, '.');
 
 
 ylim([0, quantile(taillen,.99)])
@@ -114,11 +116,12 @@ ylim([0, quantile(taillen,.99)])
 n=0:5:quantile(taillen,.99);
 histogram(taillen,n,'Parent',p.taillength)
 xlabel(p.taillength,'length of tail (nm)')
-n=1:max(taillocs)+1;
+hTL = histogram(taillen,n,'Parent',p.taillength); legend(p.taillength, hTL, ['median = ', num2str(round(median(taillen, "omitnan"),1))]);
+n = 1:max(taillocs, [], "omitnan") + 1;
 histogram(taillocs,n,'Parent',p.duration)
 xlabel(p.duration,'localizations until convergence')
 % plot(p.taillength,h)
-
+hTL = histogram(taillocs,n,'Parent',p.duration); legend(p.duration, hTL, ['median = ', num2str(median(taillocs, "omitnan"))]);
 
 
 tailsall(tailsall==0)=NaN;
