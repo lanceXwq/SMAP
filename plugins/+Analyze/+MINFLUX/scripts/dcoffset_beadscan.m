@@ -11,7 +11,7 @@ locs=g.locData.getloc({'xnm','ynm','time','tid','thi'},'layer',layers,'Position'
 
 tid=mode(locs.tid(locs.thi==0));
 t1=locs.tid==tid & locs.thi==0;
-t2=(locs.tid==tid+2 || locs.tid==tid+1) & locs.thi==1;
+t2=(locs.tid==tid+2 | locs.tid==tid+1) & locs.thi==1;
 x1=locs.xnm(t1);y1=locs.ynm(t1);
 x2=locs.xnm(t2);y2=locs.ynm(t2);
 time1=locs.time(t1);time2=locs.time(t2);
