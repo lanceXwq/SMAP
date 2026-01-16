@@ -40,7 +40,7 @@ classdef PeakCombiner<interfaces.WorkflowModule
                     obj.transform=[];
                     if length(s)==2 %2Ch
                         obj.transform.T=double(cat(3,eye(3,3),permute(T,[2 ,1]))); % xXXX create transform with that matrix.
-                        % obj.transform.T=double(cat(3,permute(T,[2 ,1]),eye(3,3))); % xXXX create transform with that matrix.
+                        %obj.transform.T=double(cat(3,permute(T,[2 ,1]),eye(3,3))); % xXXX create transform with that matrix.
                     elseif length(s)==3 %4Pi
                         obj.transform.T=double(cat(3,eye(3,3),permute(T,[3 ,2 ,1]))); % xXXX create transform with that matrix.
                     end
