@@ -14,7 +14,7 @@ else
     indgood = true (size(locx));
     locx(indnan)=-1; locy(indnan)=-1; locz(indnan)=-1;
 end
-
+indgood=indgood & abs(locx)<1e9 & abs(locy)<1e9; %XXX inserted 17.1.26 for Takahiro
 % numlocs=size(locs,1);
 locnums=(1:numlocs)';
 
