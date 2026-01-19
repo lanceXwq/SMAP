@@ -265,6 +265,7 @@ classdef PeakCombiner<interfaces.WorkflowModule
 
                 for k=length(maximas):-1:1
                     T=obj.transform.T(:,:,k);
+                    T=inv(T); %Yiming XXXXX
                     ct=transformT4Pi(ccombined,T,obj.transform.centercoord);
 %                     ct=(T*ccombined')';
                     ct(:,1)=ct(:,1)-roi(1)+driftx(k); %bring back to ROI on camera
