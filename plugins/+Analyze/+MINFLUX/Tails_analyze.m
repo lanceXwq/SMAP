@@ -26,6 +26,7 @@ function out=runintern(obj,p)
 out=[];
 
 p.meantails=obj.initaxis('meantails');
+p.meantailsadd=obj.initaxis('meantailsadd','keep');
 p.tails=obj.initaxis('tails');
 p.taillengthduration=obj.initaxis('length vs duration');
 p.taillength=obj.initaxis('length');
@@ -138,8 +139,18 @@ p.meantails.YAxis.Scale="log";
 xlabel(p.taillengthduration,'duration of tails (localizations)'); ylabel(p.taillengthduration,'length of tails (nm)')
 
 plotevery=length(tidgood)/p.maxplottails;
+hold(p.tails,'off')
 plot(p.tails, tailsall(:,1:plotevery:end));
+hold(p.tails,'on')
+plot(p.tails, mean(tailsall,2),'k','LineWidth',2);
 xlabel(p.tails,'localization'); ylabel(p.tails,'distance to average final position (nm)')
+
+[~,ftagname]=fileparts(strrep(obj.locData.files.file(locs.filenumber(1)).name,'\',filesep));
+
+hold(p.meantailsadd,'on')
+plot(p.meantailsadd, mean(tailsall,2),'DisplayName',ftagname);
+xlabel(p.meantailsadd,'localization'); ylabel(p.meantailsadd,'distance to average final position (nm)')
+legend(p.meantailsadd);
 end
 
 
