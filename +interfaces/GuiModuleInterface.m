@@ -665,7 +665,7 @@ classdef GuiModuleInterface<interfaces.GuiParameterInterface
                         
                         if isfield(thisField,'uimenu')
                             if iscell(thisField.uimenu)
-                                makemenuindicator(hg,thisField.uimenu{1},thisField.uimenu{2})
+                                makemenuindicator(hg,thisField.uimenu{1},thisField.uimenu{2});
                             else
                                 makemenuindicator(hg,thisField.uimenu);
                             end
