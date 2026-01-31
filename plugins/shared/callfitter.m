@@ -6,6 +6,11 @@ end
 %CPU fitter
 %P,CRLB,LogL
 
+% p = gcp('nocreate');
+% if isempty(p)
+%     parpool('threads')
+% end
+
 args=varargin;
 
 % k_block=100;
@@ -19,7 +24,7 @@ imfitc=imfit;
 % outparnum=3;
 
 % [varargout0{1:nargout}] = fh(imfitc.Value(:,:,1),args{2:end});
-[varargout0{1:nargout}] = fh(imfitc(:,:,1),args{2:end});
+[varargout0{1:nargout}] = fh(imfitc(:,:,1,:),args{2:end});
 % for k=nargout:-1:1
     out1=zeros(size(imfit,3),size(varargout0{1},2));
     out2=zeros(size(imfit,3),size(varargout0{2},2));
@@ -30,7 +35,7 @@ parfor b = 1:numlocs
     % s = starts(b);
     % e = min(s + k_block - 1, size(imfitc.Value,3));
     % Ablk = imfitc.Value(:,:,b);
-    Ablk = imfitc(:,:,b);
+    Ablk = imfitc(:,:,b,:);
 
     [t1,t2,t3] = fh(Ablk,args2{:});
 
