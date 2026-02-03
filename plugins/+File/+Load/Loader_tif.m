@@ -57,6 +57,11 @@ pard.autocontrast.object=struct('Style','checkbox','String','auto contrast');
 pard.autocontrast.position=[2,1];
 pard.autocontrast.Width=2;
 
+pard.abberior.object=struct('Style','checkbox','String','Abberior MF');
+pard.abberior.position=[2,3];
+pard.abberior.Width=2;
+
+
 pard.plugininfo=info;
 pard.plugininfo.type='LoaderPlugin';
 pard.plugininfo.description='Loads diffrction-limited tiff images and associates them to an already loaded SMAP data set.';
@@ -102,8 +107,13 @@ else
 end
 obj.locData.files.file(f).numberOfTif=tiffold+numimages;
 % imout=gettif(file);
-for k=1:numimages
-    images(k).info.cam_pixelsize_um=obj.locData.files.file(f).info.cam_pixelsize_um;
+if p.abberior
+    images(k).info.roi
+    images(k).info.cam_pixelsize_um
+else
+    for k=1:numimages
+        images(k).info.cam_pixelsize_um=obj.locData.files.file(f).info.cam_pixelsize_um;
+    end
 end
 if p.autocontrast
     image=double(images.image);
