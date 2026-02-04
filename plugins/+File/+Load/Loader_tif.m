@@ -45,21 +45,28 @@ info.dialogtitle='select any Tif file';
 
 pard.stack.object=struct('Style','checkbox','String','load stack');
 pard.stack.position=[1,1];
-pard.stack.Width=2;
+pard.stack.Width=1.3;
 pard.stack.TooltipString='Load image stack (otherwise load single image)';
 
 pard.mirrortif.object=struct('Style','checkbox','String','Mirror (for EM gain)');
-pard.mirrortif.position=[1,3];
-pard.mirrortif.Width=2;
+pard.mirrortif.position=[1,2.3];
+pard.mirrortif.Width=1.3;
 pard.mirrortif.TooltipString='Mirror image. Might be required if EM gain was used';
 
 pard.autocontrast.object=struct('Style','checkbox','String','auto contrast');
-pard.autocontrast.position=[2,1];
-pard.autocontrast.Width=2;
+pard.autocontrast.position=[1,3.6];
+pard.autocontrast.Width=1.3;
 
-pard.abberior.object=struct('Style','checkbox','String','Abberior MF');
-pard.abberior.position=[2,3];
+pard.abberior.object=struct('Style','checkbox','String','Abberior. Offset x,y: ');
+pard.abberior.position=[2,1];
 pard.abberior.Width=2;
+
+pard.offsetsx.object=struct('Style','edit','String','0');
+pard.offsetsx.position=[2,3];
+pard.offsetsx.Width=1;
+pard.offsetsy.object=struct('Style','edit','String','0');
+pard.offsetsy.position=[2,4];
+pard.offsetsy.Width=1;
 
 
 pard.plugininfo=info;
@@ -108,8 +115,10 @@ end
 obj.locData.files.file(f).numberOfTif=tiffold+numimages;
 % imout=gettif(file);
 if p.abberior
-    images(k).info.roi
-    images(k).info.cam_pixelsize_um
+    imf=imfinfo(file);
+    px=1/imf.XResolution;
+    images(1).info.roi=[p.offsetsx/px, p.offsetsy/px, size(images.image,1), size(images.image,2)];
+    images(1).info.cam_pixelsize_um=px;
 else
     for k=1:numimages
         images(k).info.cam_pixelsize_um=obj.locData.files.file(f).info.cam_pixelsize_um;
